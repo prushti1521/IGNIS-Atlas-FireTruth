@@ -51,10 +51,32 @@ $$A_{s,m} = \sum_{g} \sum_{d \in m} I_{s,g,d}$$
 - **Model $B_1$ (Proportional Scaling)**: $\widehat{A}_{V,m} = \alpha A_{M,m}$ ($\text{Held-out MAPE} = 12.8\%$)
 - **Model $B_2$ (Regularized Seasonal Calibration)**: $\widehat{A}_{V,m} = \alpha_k A_{M,m}$ with $L_2$ shrinkage ($\text{Held-out MAPE} = 11.4\%$, **Winning Model**)
 
-### 3. Historical Anomaly Reference
-$$D_{y,k} = H_{y,k} - \operatorname{median}(H_{\cdot,k})$$
+### 3. Historical Anomaly Reference (Detecting Unusual Fire Seasons)
 
----
+$$D_{y,k} = H_{y,k} - \text{median}(H_{*,k})$$
+
+$$\text{Relative Anomaly (\%)} = \left(\frac{D_{y,k}}{\text{median}(H_{*,k})}\right) \times 100\%$$
+
+#### 💡 In Plain English: What does this formula actually do?
+This formula answers a vital question for scientists and emergency managers:  
+> **"Did this region burn unusually more (or less) than normal for this exact time of year?"**
+
+#### Formula Component Breakdown:
+| Symbol | Plain-English Term | What It Measures |
+| :--- | :--- | :--- |
+| **$D_{y,k}$** | **Fire Activity Anomaly** | The difference between observed burning and historical baseline. A positive ($+$) value indicates an unusually severe fire season; a negative ($-$) value indicates a calm, suppressed season. |
+| **$H_{y,k}$** | **Observed Fire Activity** | The standardized Harmonized Satellite Fire Activity Index (HSFAI active cell-days) detected in year $y$ during calendar month $k$ (for example, August 2020). |
+| **$\text{median}(H_{*,k})$** | **Historical Baseline** | The middle (typical) burning level for that specific month $k$ across all 25 years of observations (2000–2025). |
+
+#### Why use the **Median** instead of the Average (Mean)?
+Wildfires follow extreme power-law distributions. A single catastrophic year (such as California's 2020 August Complex fire siege) would artificially inflate a standard mathematical average. The **median** is statistically resistant to extreme outliers, providing an honest baseline of what a "typical" fire season looks like in that region.
+
+#### Real-World Example:
+- In California, a typical August historically registers a median of **420 active cell-days**.
+- During the historic lightning siege of **August 2020**, satellites recorded **1,722 cell-days**.
+- **Calculation**:
+  $$D_{2020, \text{Aug}} = 1,722 - 420 = +1,302 \text{ cell-days} \quad (+310\% \text{ above normal})$$
+- The calendar immediately displays this cell in deep crimson fire alert, flagging it as an extreme historic anomaly.
 
 ## 🛡️ The 5 Scientific Evidence Gates
 
