@@ -6,9 +6,10 @@ import { Play, Pause, RotateCcw, Eye, Zap, Flame, Satellite } from 'lucide-react
 
 interface ExplorerMapProps {
   selectedRegion: RegionDefinition;
+  uploadedHotspots?: FireHotspot[] | null;
 }
 
-export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion }) => {
+export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, uploadedHotspots = null }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -41,10 +42,10 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion }) => {
         attributionControl: false
       });
 
-      // CartoDB Dark Matter tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // OpenStreetMap tiles require no API key; NASA FIRMS remains the data source.
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd'
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
       // Add custom NASA FIRMS attribution
@@ -72,8 +73,10 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion }) => {
   }, [isPlaying]);
 
   // Filter hotspots for current region and settings
-  const filteredHotspots = SAMPLE_HOTSPOTS.filter(h => {
+  const sourceHotspots = uploadedHotspots ?? SAMPLE_HOTSPOTS;
+  const filteredHotspots = sourceHotspots.filter(h => {
     if (h.regionId !== selectedRegion.id) return false;
+    if (Number(h.acq_date.slice(5, 7)) !== activeMonth) return false;
     if (sensorFilter !== 'ALL' && h.instrument !== sensorFilter) return false;
     if (confidenceFilter === 'HIGH' && h.confidence !== 'high') return false;
     if (confidenceFilter === 'NOMINAL_HIGH' && h.confidence === 'low') return false;

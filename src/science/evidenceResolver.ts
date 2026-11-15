@@ -179,7 +179,7 @@ export function runEvidenceAudit(
       finding: `The detected change (${harmonizedDifferencePercent > 0 ? '+' : ''}${harmonizedDifferencePercent}%) cannot be reliably distinguished from calibration model residual uncertainty (±${uncertaintyMargin}%).`,
       metricLabel: 'Harmonized Δ vs Uncertainty',
       measuredValue: `${harmonizedDifferencePercent > 0 ? '+' : ''}${harmonizedDifferencePercent}% (Uncertainty ±${uncertaintyMargin}%)`,
-      thresholdLabel: `Significant Shift |Δ| > ${uncertaintyMargin}% (95% CI bound)`,
+      thresholdLabel: `Significant Shift |Δ| > ${uncertaintyMargin}% (Residual-scale heuristic)`,
       scientificImplication: 'The reported historical variation falls within the expected statistical uncertainty band of cross-sensor translation.',
       physicalMechanism: 'Natural orbital revisit jitter and cloud fraction sampling variance produce residual model scatter comparable to the detected trend.',
       inputData: `Harmonized Δ: ${harmonizedDifferencePercent}%; Held-out model RMSE: ${heldoutRmse} cell-days; Baseline: ${totalHsfaiA} cell-days`,
@@ -197,14 +197,14 @@ export function runEvidenceAudit(
       finding: `The detected activity change (${harmonizedDifferencePercent > 0 ? '+' : ''}${harmonizedDifferencePercent}%) exceeds the nominal model residual uncertainty threshold (±${uncertaintyMargin}%).`,
       metricLabel: 'Harmonized Δ vs Uncertainty',
       measuredValue: `${harmonizedDifferencePercent > 0 ? '+' : ''}${harmonizedDifferencePercent}% (Uncertainty ±${uncertaintyMargin}%)`,
-      thresholdLabel: `Significant Shift |Δ| > ${uncertaintyMargin}% (Nominal 95% Bound)`,
+      thresholdLabel: `Significant Shift |Δ| > ${uncertaintyMargin}% (Residual-scale heuristic)`,
       scientificImplication: 'The physical burning signal exceeds nominal instrument and calibration residual noise.',
       physicalMechanism: 'Thermal anomaly signal amplitude exceeds the estimated cumulative error of instrument noise, view geometry, and atmospheric attenuation.',
       inputData: `Harmonized Δ: ${harmonizedDifferencePercent}%; Model uncertainty heuristic: ±${uncertaintyMargin}%`,
       calculation: `|${harmonizedDifferencePercent}%| > ${uncertaintyMargin}%`,
-      thresholdJustification: 'Signal-to-noise criterion: historical trend must exceed the nominal 95% model residual standard error.',
+      thresholdJustification: 'Project-defined residual-scale heuristic using 1.96 × held-out RMSE; this is not a statistically validated 95% prediction interval.',
       limitations: 'Valid assuming model error does not co-vary systematically with the evaluated climate event.',
-      recommendedAction: 'Cite the harmonized shift alongside its empirical confidence interval.'
+      recommendedAction: 'Cite the harmonized shift alongside the empirical residual-scale heuristic and its limitations.'
     });
   }
 

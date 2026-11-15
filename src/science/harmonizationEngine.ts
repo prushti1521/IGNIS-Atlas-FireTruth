@@ -99,8 +99,8 @@ export function evaluateCalibrationModels(
   }
   const b1Alpha = sumMM > 0 ? Number((sumMV / sumMM).toFixed(3)) : region.baselineAlphaRatio;
 
-  const b1TrainPreds = trainSet.map(r => Math.round(r.modisCellDays * b1Alpha));
-  const b1TestPreds = testSet.map(r => Math.round(r.modisCellDays * b1Alpha));
+  const b1TrainPreds = trainSet.map(r => r.modisCellDays * b1Alpha);
+  const b1TestPreds = testSet.map(r => r.modisCellDays * b1Alpha);
   const b1Metrics = computeFitMetrics(
     trainSet.map(r => r.viirsCellDays),
     b1TrainPreds,
@@ -141,15 +141,15 @@ export function evaluateCalibrationModels(
         mSumMM += r.modisCellDays * r.modisCellDays;
       }
       const rawMonthRatio = mSumMM > 0 ? mSumMV / mSumMM : b1Alpha;
-      const regularizedRatio = 0.7 * rawMonthRatio + 0.3 * b1Alpha;
+      const regularizedRatio = 0.65 * rawMonthRatio + 0.35 * b1Alpha;
       seasonalFactors[m] = Number(regularizedRatio.toFixed(3));
     } else {
       seasonalFactors[m] = b1Alpha;
     }
   }
 
-  const b2TrainPreds = trainSet.map(r => Math.round(r.modisCellDays * (seasonalFactors[r.month] || b1Alpha)));
-  const b2TestPreds = testSet.map(r => Math.round(r.modisCellDays * (seasonalFactors[r.month] || b1Alpha)));
+  const b2TrainPreds = trainSet.map(r => r.modisCellDays * (seasonalFactors[r.month] || b1Alpha));
+  const b2TestPreds = testSet.map(r => r.modisCellDays * (seasonalFactors[r.month] || b1Alpha));
   const b2Metrics = computeFitMetrics(
     trainSet.map(r => r.viirsCellDays),
     b2TrainPreds,

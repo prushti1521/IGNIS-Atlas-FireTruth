@@ -201,8 +201,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <CheckCircle2 size={16} color="#34d399" />
             <span>
-              <strong style={{ color: '#6ee7b7' }}>LIVE NASA DATA LOADED:</strong>{' '}
-              Successfully ingested and projected {uploadedRecordCount.toLocaleString()} real NASA FIRMS active-fire records into the equal-area grid.
+              <strong style={{ color: '#6ee7b7' }}>UPLOADED FIRMS RECORDS LOADED:</strong>{' '}
+              Successfully ingested and projected {uploadedRecordCount.toLocaleString()} user-supplied FIRMS records into the equal-area grid.
+              Verify the source file provenance before treating them as authentic NASA observations.
             </span>
           </div>
           <button

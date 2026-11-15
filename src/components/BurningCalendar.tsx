@@ -243,7 +243,10 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
           <tbody>
             {years.map(yr => {
               const yearRecs = records.filter(r => r.year === yr).sort((a, b) => a.month - b.month);
-              const totalAnnualHsfai = yearRecs.reduce((sum, r) => sum + (r.hsfai ?? 0), 0);
+              const observedAnnualValues = yearRecs
+                .map(r => r.hsfai)
+                .filter((value): value is number => value !== null);
+              const totalAnnualHsfai = observedAnnualValues.reduce((sum, value) => sum + value, 0);
               const notableYearEvent = yearRecs.find(r => r.notableEvent)?.notableEvent;
               const isPreViirs = yr < 2012;
 
@@ -328,7 +331,7 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
                     fontWeight: 700,
                     color: totalAnnualHsfai > 3000 ? '#fbbf24' : 'var(--text-muted)'
                   }}>
-                    {totalAnnualHsfai.toLocaleString()}
+                    {observedAnnualValues.length > 0 ? totalAnnualHsfai.toLocaleString() : '—'}
                   </td>
 
                   {/* Notable Event Tag */}
@@ -391,7 +394,7 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
               </div>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                 {selectedCell.hsfaiLowerCi !== null && selectedCell.hsfaiUpperCi !== null
-                  ? `95% CI: [${selectedCell.hsfaiLowerCi.toLocaleString()} – ${selectedCell.hsfaiUpperCi.toLocaleString()}]`
+                  ? `Nominal uncertainty range (heuristic): [${selectedCell.hsfaiLowerCi.toLocaleString()} – ${selectedCell.hsfaiUpperCi.toLocaleString()}]`
                   : 'Prior to instrument commissioning'}
               </span>
             </div>

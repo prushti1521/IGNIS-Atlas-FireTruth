@@ -152,6 +152,9 @@ export const EvidenceReportModal: React.FC<EvidenceReportModalProps> = ({
             <h4 style={{ fontSize: '0.92rem', color: 'var(--text-bright)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', marginBottom: '8px' }}>
               3. Empirical Model Parameters & Held-Out Generalization
             </h4>
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.74rem', margin: '0 0 8px' }}>
+              The following figures are from the configured calibrated demonstration benchmark; they are not validation results for arbitrary authentic NASA downloads.
+            </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', textAlign: 'center', margin: '8px 0' }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '6px' }}>
                 <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Empirical Ratio (α)</span>
@@ -187,7 +190,7 @@ export const EvidenceReportModal: React.FC<EvidenceReportModalProps> = ({
             </h4>
             <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '6px', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
               NASA FIRMS (2026). MODIS Collection 6.1 and VIIRS 375m active fire data. NASA EOSDIS Land, Atmosphere Near real-time Capability for EOS (LANCE). DOI: 10.5067/FIRMS/MODIS/MCD14DL.NRT.0061.<br /><br />
-              Generated via IGNIS Atlas — FireTruth (NASA Space Apps Challenge 2026). All algorithms strictly validated against held-out observations.
+              Generated via IGNIS Atlas — FireTruth (NASA Space Apps Challenge 2026). Metrics shown here describe the configured demonstration benchmark unless user-supplied observational records are loaded; they are not a claim of universal real-world validation.
             </div>
           </div>
         </div>

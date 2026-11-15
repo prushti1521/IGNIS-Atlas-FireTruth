@@ -182,3 +182,37 @@ def test_real_firms_ingestion_pipeline():
     # In August 2024, 5 VIIRS hotspots snap into 4 unique cell-days
     assert aug_viirs.iloc[0]["raw_hotspots"] == 5
     assert aug_viirs.iloc[0]["active_cell_days"] == 4
+
+
+def test_firms_ingestion_filters_and_rejection_provenance(tmp_path):
+    """Date/region filters and malformed-row counts must be explicit in provenance."""
+    from science.ingest_firms import ingest_firms_csv
+
+    csv_path = tmp_path / "firms.csv"
+    csv_path.write_text(
+        "latitude,longitude,acq_date,acq_time,satellite,instrument,confidence,frp\n"
+        "37.25,-119.75,2024-08-15,1930,Aqua,MODIS,85,42.5\n"
+        "37.25,-119.75,2024-08-16,0815,N,VIIRS,nominal,18.4\n"
+        "91.0,-119.75,2024-08-15,1930,Aqua,MODIS,85,42.5\n"
+        "37.25,-119.75,not-a-date,1930,Aqua,MODIS,85,42.5\n"
+        "37.25,-119.75,2024-08-15,2500,Aqua,MODIS,85,42.5\n"
+        "37.25,-119.75,2024-08-15,1930,Unknown,MODIS,85,42.5\n",
+        encoding="utf-8"
+    )
+
+    monthly_df, meta = ingest_firms_csv(
+        str(csv_path),
+        start_date="2024-08-15",
+        end_date="2024-08-15",
+        bbox=(37.0, -120.0, 38.0, -119.0)
+    )
+
+    assert meta["total_records_ingested"] == 6
+    assert meta["qualified_hotspots"] == 1
+    assert meta["rejected_rows"]["invalid_coordinates"] == 1
+    assert meta["rejected_rows"]["invalid_dates"] == 1
+    assert meta["rejected_rows"]["invalid_times"] == 1
+    assert meta["rejected_rows"]["invalid_satellites"] == 1
+    assert meta["filters"]["start_date"] == "2024-08-15"
+    assert meta["filters"]["bbox"] == [37.0, -120.0, 38.0, -119.0]
+    assert monthly_df.iloc[0]["raw_hotspots"] == 1

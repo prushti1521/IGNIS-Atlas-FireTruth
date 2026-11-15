@@ -207,12 +207,12 @@ def audit_historical_fire_claim(
             status="WARNING",
             headline="Observed Delta Within Expected Calibration Residual Noise",
             measured_metric=f"Harmonized Δ = {harmonized_delta:+.1f}% vs Uncertainty ±{uncertainty_margin:.1f}%",
-            threshold=f"Significant Shift |Δ| > {uncertainty_margin:.1f}% (Nominal 95% Bound)",
+            threshold=f"Significant Shift |Δ| > {uncertainty_margin:.1f}% (Residual-Scale Heuristic)",
             findings=f"The apparent detected activity change ({harmonized_delta:+.1f}%) cannot be reliably distinguished from calibration model residual uncertainty (±{uncertainty_margin:.1f}%).",
             physical_mechanism="Natural orbital sampling noise and model residual spread are comparable in amplitude to the detected change.",
             input_data=f"Harmonized Δ: {harmonized_delta:+.1f}%; Held-out model RMSE: {heldout_rmse:.1f} cell-days; Baseline: {hsfai_a:.0f} cell-days",
             calculation=f"|{harmonized_delta:+.1f}%| ≤ (1.96 * {heldout_rmse:.1f} / {max(1.0, hsfai_a):.0f}) * 100 = {uncertainty_margin:.1f}%",
-            threshold_justification="Nominal baseline uncertainty heuristic (±1.96 * RMSE_heldout). Acknowledges that active-fire distributions exhibit residual heteroscedasticity rather than pure Gaussian homoscedasticity; changes within this margin cannot be reliably distinguished from calibration model residual noise.",
+            threshold_justification="Project-defined residual-scale heuristic (±1.96 * held-out RMSE), not a statistically validated 95% prediction interval. Active-fire distributions exhibit residual heteroscedasticity rather than pure Gaussian homoscedasticity; changes within this margin cannot be reliably distinguished from calibration model residual noise.",
             limitations="Residuals assume approximate symmetry across monthly aggregates; heteroscedasticity increases during extreme fire sieges.",
             recommended_action="Treat the trend as inconclusive or within baseline noise envelope."
         ))
@@ -221,16 +221,16 @@ def audit_historical_fire_claim(
             gate_id="gate-3-uncertainty",
             gate_name="Change Versus Calibration Uncertainty Gate",
             status="PASS",
-            headline="Observed Delta Statistically Exceeds Model Uncertainty Heuristic",
+            headline="Observed Delta Exceeds Residual-Scale Heuristic",
             measured_metric=f"Harmonized Δ = {harmonized_delta:+.1f}% vs Uncertainty ±{uncertainty_margin:.1f}%",
-            threshold=f"Significant Shift |Δ| > {uncertainty_margin:.1f}% (Nominal 95% Bound)",
-            findings=f"The detected activity change ({harmonized_delta:+.1f}%) exceeds the nominal model residual uncertainty threshold (±{uncertainty_margin:.1f}%).",
+            threshold=f"Significant Shift |Δ| > {uncertainty_margin:.1f}% (Residual-Scale Heuristic)",
+            findings=f"The detected activity change ({harmonized_delta:+.1f}%) exceeds the project-defined residual-scale heuristic (±{uncertainty_margin:.1f}%), not a statistically validated prediction interval.",
             physical_mechanism="The physical burning signal exceeds instrument and calibration residual noise.",
             input_data=f"Harmonized Δ: {harmonized_delta:+.1f}%; Model nominal uncertainty: ±{uncertainty_margin:.1f}%",
             calculation=f"|{harmonized_delta:+.1f}%| > {uncertainty_margin:.1f}%",
-            threshold_justification="Signal-to-noise criterion based on nominal baseline uncertainty heuristic (±1.96 * RMSE_heldout). Acknowledges residual heteroscedasticity; the historical trend exceeds the nominal model residual noise envelope.",
+            threshold_justification="Project-defined residual-scale heuristic (±1.96 * held-out RMSE), not a statistically validated 95% prediction interval. Residual heteroscedasticity means this is an evidence screen, not a formal confidence interval.",
             limitations="Valid assuming model error does not co-vary systematically with the evaluated climate event.",
-            recommended_action="Cite the harmonized shift alongside its empirical confidence interval."
+            recommended_action="Cite the harmonized shift alongside the empirical residual-scale heuristic and its limitations."
         ))
 
     # ==========================================
