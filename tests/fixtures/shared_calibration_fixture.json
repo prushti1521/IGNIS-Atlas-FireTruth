@@ -1,0 +1,86 @@
+{
+  "description": "Authoritative shared test fixture for Python and TypeScript numerical parity verification in IGNIS Atlas — FireTruth.",
+  "metadata": {
+    "version": "2.1.0",
+    "projection": "Authalic Spherical Sinusoidal Equal-Area",
+    "earth_radius_authalic_km": 6371.0088,
+    "cell_size_km": 25.0
+  },
+  "spatial_projection_samples": [
+    {
+      "name": "Equator prime meridian",
+      "lat": 0.0,
+      "lon": 0.0,
+      "expected_x_km": 0.0,
+      "expected_y_km": 0.0,
+      "expected_cell_id": "EA_25km_+0_+0"
+    },
+    {
+      "name": "California Sierra Nevada hotspot",
+      "lat": 37.25,
+      "lon": -119.75,
+      "expected_x_km": -10599.25,
+      "expected_y_km": 4142.02,
+      "expected_cell_id": "EA_25km_-424_+165"
+    },
+    {
+      "name": "Punjab agricultural hotspot",
+      "lat": 30.50,
+      "lon": 75.80,
+      "expected_x_km": 7262.32,
+      "expected_y_km": 3391.45,
+      "expected_cell_id": "EA_25km_+290_+135"
+    }
+  ],
+  "cell_day_deduplication_cases": [
+    {
+      "description": "3 hotspots in same 25km cell on same day, 1 on next day",
+      "hotspots": [
+        { "latitude": 37.251, "longitude": -119.751, "acq_date": "2024-08-15", "instrument": "VIIRS" },
+        { "latitude": 37.254, "longitude": -119.749, "acq_date": "2024-08-15", "instrument": "VIIRS" },
+        { "latitude": 37.248, "longitude": -119.752, "acq_date": "2024-08-15", "instrument": "VIIRS" },
+        { "latitude": 37.250, "longitude": -119.750, "acq_date": "2024-08-16", "instrument": "VIIRS" }
+      ],
+      "expected_raw_hotspots": 4,
+      "expected_cell_days": 2
+    }
+  ],
+  "calibration_translation_cases": [
+    {
+      "region_id": "california",
+      "alpha": 3.68,
+      "modis_cell_days": 100,
+      "expected_b1_hsfai": 368.0,
+      "expected_95ci_lower": 323.8,
+      "expected_95ci_upper": 412.2
+    },
+    {
+      "region_id": "punjab",
+      "alpha": 5.84,
+      "modis_cell_days": 250,
+      "expected_b1_hsfai": 1460.0,
+      "expected_95ci_lower": 1284.8,
+      "expected_95ci_upper": 1635.2
+    }
+  ],
+  "evidence_audit_cases": [
+    {
+      "case_id": "california_false_surge_2008_2018",
+      "region_id": "california",
+      "year_a": 2008,
+      "year_b": 2018,
+      "raw_delta_percent": 370.4,
+      "expected_harmonized_delta_percent": 27.8,
+      "expected_verdict": "SUPPORTED"
+    },
+    {
+      "case_id": "amazon_wet_season_cloud_mask_fail",
+      "region_id": "amazon",
+      "year_a": 2015,
+      "year_b": 2022,
+      "month": 2,
+      "expected_gate_5_status": "FAIL",
+      "expected_verdict": "INSUFFICIENT_EVIDENCE"
+    }
+  ]
+}

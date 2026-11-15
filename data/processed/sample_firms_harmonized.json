@@ -1,0 +1,65 @@
+{
+  "provenance": {
+    "source_file": "data/sample_firms_download.csv",
+    "source_sha256": "c91ebe051408a50f159cc40a0edd4acf255c0e560860f5ce9451a5fadfe19b6c",
+    "file_size_bytes": 1206,
+    "total_records_ingested": 13,
+    "qualified_hotspots": 13,
+    "equal_area_cell_size_km": 25.0,
+    "nominal_cell_area_km2": 625.0,
+    "confidence_policy": "nominal_high",
+    "date_processed": "2026-11-15T03:10:51.477210+00:00",
+    "min_date": "2024-08",
+    "max_date": "2024-10"
+  },
+  "monthly_aggregates": [
+    {
+      "year": 2024,
+      "month": 8,
+      "instrument": "MODIS",
+      "active_cell_days": 3,
+      "raw_hotspots": 3,
+      "total_frp_mw": 135.8
+    },
+    {
+      "year": 2024,
+      "month": 8,
+      "instrument": "VIIRS",
+      "active_cell_days": 4,
+      "raw_hotspots": 5,
+      "total_frp_mw": 138.3
+    },
+    {
+      "year": 2024,
+      "month": 9,
+      "instrument": "MODIS",
+      "active_cell_days": 1,
+      "raw_hotspots": 1,
+      "total_frp_mw": 38.0
+    },
+    {
+      "year": 2024,
+      "month": 9,
+      "instrument": "VIIRS",
+      "active_cell_days": 1,
+      "raw_hotspots": 1,
+      "total_frp_mw": 25.4
+    },
+    {
+      "year": 2024,
+      "month": 10,
+      "instrument": "MODIS",
+      "active_cell_days": 1,
+      "raw_hotspots": 1,
+      "total_frp_mw": 15.2
+    },
+    {
+      "year": 2024,
+      "month": 10,
+      "instrument": "VIIRS",
+      "active_cell_days": 1,
+      "raw_hotspots": 2,
+      "total_frp_mw": 29.2
+    }
+  ]
+}

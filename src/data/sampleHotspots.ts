@@ -1,8 +1,10 @@
 import type { FireHotspot } from '../types/fire';
 
 export const SAMPLE_HOTSPOTS: FireHotspot[] = [
-  // California Hotspots (Simulating 2020-2024 Major Wildfire Perimeters)
-  // August Complex / Northern California
+  // ========================================================
+  // 1. California Hotspots (Wildfire / Forest & Chaparral Regime)
+  // August Complex (1,032,648-acre megafire) / Park Fire / Sierra National Forest
+  // ========================================================
   {
     id: 'firms-ca-001',
     latitude: 39.852,
@@ -157,7 +159,10 @@ export const SAMPLE_HOTSPOTS: FireHotspot[] = [
     regionId: 'california'
   },
 
-  // Punjab & Haryana, India (Agricultural Fire Points)
+  // ========================================================
+  // 2. Punjab & Haryana, India (Agricultural Fire Points)
+  // High-density small post-harvest paddy stubble burns in Oct-Nov
+  // ========================================================
   {
     id: 'firms-pb-001',
     latitude: 30.892,
@@ -243,8 +248,62 @@ export const SAMPLE_HOTSPOTS: FireHotspot[] = [
     daynight: 'D',
     regionId: 'punjab'
   },
+  {
+    id: 'firms-pb-006',
+    latitude: 31.140,
+    longitude: 75.310,
+    brightness: 331.4,
+    scan: 0.38,
+    track: 0.36,
+    acq_date: '2024-11-10',
+    acq_time: '0815',
+    satellite: 'S-NPP',
+    instrument: 'VIIRS',
+    confidence: 'high',
+    version: 'VNP14IMGTDL_NRT',
+    frp: 28.1,
+    daynight: 'D',
+    regionId: 'punjab'
+  },
+  {
+    id: 'firms-pb-007',
+    latitude: 31.152,
+    longitude: 75.328,
+    brightness: 327.9,
+    scan: 0.40,
+    track: 0.37,
+    acq_date: '2024-11-10',
+    acq_time: '0815',
+    satellite: 'NOAA-20',
+    instrument: 'VIIRS',
+    confidence: 'nominal',
+    version: 'VJ114IMGTDL_NRT',
+    frp: 19.3,
+    daynight: 'D',
+    regionId: 'punjab'
+  },
+  {
+    id: 'firms-pb-008',
+    latitude: 29.980,
+    longitude: 76.820,
+    brightness: 325.2,
+    scan: 1.08,
+    track: 1.04,
+    acq_date: '2024-11-12',
+    acq_time: '0910',
+    satellite: 'Terra',
+    instrument: 'MODIS',
+    confidence: 'nominal',
+    version: '6.1NRT',
+    frp: 31.5,
+    daynight: 'D',
+    regionId: 'punjab'
+  },
 
-  // Amazon Basin & Pantanal
+  // ========================================================
+  // 3. Amazon Basin & Pantanal (Tropical Deforestation & Drought)
+  // Heavy smoke plumes, persistent deforestation lines & savanna fires
+  // ========================================================
   {
     id: 'firms-amz-001',
     latitude: -9.850,
@@ -313,8 +372,45 @@ export const SAMPLE_HOTSPOTS: FireHotspot[] = [
     daynight: 'D',
     regionId: 'amazon'
   },
+  {
+    id: 'firms-amz-005',
+    latitude: -11.230,
+    longitude: -54.890,
+    brightness: 375.4,
+    scan: 0.38,
+    track: 0.36,
+    acq_date: '2024-09-15',
+    acq_time: '1715',
+    satellite: 'S-NPP',
+    instrument: 'VIIRS',
+    confidence: 'high',
+    version: 'VNP14IMGTDL_NRT',
+    frp: 195.0,
+    daynight: 'D',
+    regionId: 'amazon'
+  },
+  {
+    id: 'firms-amz-006',
+    latitude: -11.245,
+    longitude: -54.912,
+    brightness: 338.2,
+    scan: 1.15,
+    track: 1.08,
+    acq_date: '2024-09-15',
+    acq_time: '1755',
+    satellite: 'Aqua',
+    instrument: 'MODIS',
+    confidence: 'nominal',
+    version: '6.1NRT',
+    frp: 112.0,
+    daynight: 'D',
+    regionId: 'amazon'
+  },
 
-  // Australia Black Summer / SE Region
+  // ========================================================
+  // 4. Australia Black Summer / SE Region (NSW & Victoria)
+  // Extreme pyro-convective bushfires, stratospheric smoke injection
+  // ========================================================
   {
     id: 'firms-aus-001',
     latitude: -35.210,
@@ -346,6 +442,57 @@ export const SAMPLE_HOTSPOTS: FireHotspot[] = [
     confidence: 'high',
     version: '6.1NRT',
     frp: 310.0,
+    daynight: 'D',
+    regionId: 'australia'
+  },
+  {
+    id: 'firms-aus-003',
+    latitude: -36.540,
+    longitude: 148.210,
+    brightness: 480.2,
+    scan: 0.38,
+    track: 0.36,
+    acq_date: '2020-01-08',
+    acq_time: '0430',
+    satellite: 'S-NPP',
+    instrument: 'VIIRS',
+    confidence: 'high',
+    version: 'VNP14IMGTDL_NRT',
+    frp: 520.0,
+    daynight: 'D',
+    regionId: 'australia'
+  },
+  {
+    id: 'firms-aus-004',
+    latitude: -36.555,
+    longitude: 148.235,
+    brightness: 432.1,
+    scan: 0.40,
+    track: 0.37,
+    acq_date: '2020-01-08',
+    acq_time: '0430',
+    satellite: 'NOAA-20',
+    instrument: 'VIIRS',
+    confidence: 'high',
+    version: 'VJ114IMGTDL_NRT',
+    frp: 340.0,
+    daynight: 'D',
+    regionId: 'australia'
+  },
+  {
+    id: 'firms-aus-005',
+    latitude: -37.120,
+    longitude: 147.650,
+    brightness: 395.0,
+    scan: 1.15,
+    track: 1.05,
+    acq_date: '2020-01-12',
+    acq_time: '0510',
+    satellite: 'Terra',
+    instrument: 'MODIS',
+    confidence: 'nominal',
+    version: '6.1NRT',
+    frp: 215.0,
     daynight: 'D',
     regionId: 'australia'
   }

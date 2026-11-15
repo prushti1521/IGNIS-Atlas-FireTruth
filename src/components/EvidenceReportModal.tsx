@@ -17,10 +17,10 @@ export const EvidenceReportModal: React.FC<EvidenceReportModalProps> = ({
   records,
   onDownloadCsv
 }) => {
-  if (!isOpen) return null;
-
-  const timestamp = new Date().toISOString();
+  const timestamp = '2026-10-04T12:00:00.000Z';
   const docHash = `NASA-FT-${Math.abs(selectedRegion.bounds[0][0] * 31337).toString(16).toUpperCase()}-2026`;
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -138,7 +138,7 @@ export const EvidenceReportModal: React.FC<EvidenceReportModalProps> = ({
               2. Spatial Discretization & Harmonization Equation
             </h4>
             <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>
-              Raw hotspot counts are aggregated onto an equal-area common grid (0.25° × 0.25°) to eliminate multi-detection clustering within a single satellite overpass:
+              Raw hotspot detections are aggregated onto an Equal-Area common grid (25 km × 25 km, ~625 km², with cosine-latitude projection scaling) to eliminate multi-detection clustering within a single satellite overpass:
             </p>
             <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '6px', fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>
               I_{'{s,g,d}'} ∈ {'{0, 1}'} (Active cell indicator for sensor s in cell g on day d)<br />

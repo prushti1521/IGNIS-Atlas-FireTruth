@@ -1,5 +1,21 @@
-import React from 'react';
-import { Flame, Satellite, ShieldCheck, Download, FileText, Sparkles, MapPin, Sliders, Calendar, Microscope } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import {
+  Flame,
+  Satellite,
+  ShieldCheck,
+  Download,
+  FileText,
+  Sparkles,
+  MapPin,
+  Sliders,
+  Calendar,
+  Microscope,
+  Upload,
+  AlertCircle,
+  X,
+  Compass,
+  CheckCircle2
+} from 'lucide-react';
 import type { RegionDefinition } from '../types/fire';
 import { STUDY_REGIONS } from '../data/regions';
 
@@ -11,6 +27,9 @@ interface HeaderProps {
   onOpenReport: () => void;
   onExportCsv: () => void;
   onSelectScenario: (scenarioId: string) => void;
+  isDemonstrationActive?: boolean;
+  onUploadCsv?: (file: File) => void;
+  uploadedRecordCount?: number | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,8 +39,20 @@ export const Header: React.FC<HeaderProps> = ({
   setSelectedRegion,
   onOpenReport,
   onExportCsv,
-  onSelectScenario
+  onSelectScenario,
+  isDemonstrationActive = true,
+  onUploadCsv,
+  uploadedRecordCount = null
 }) => {
+  const [isBannerDismissed, setIsBannerDismissed] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0] && onUploadCsv) {
+      onUploadCsv(e.target.files[0]);
+    }
+  };
+
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
@@ -39,10 +70,12 @@ export const Header: React.FC<HeaderProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        fontSize: '0.78rem',
-        color: 'var(--text-muted)'
+        fontSize: '0.76rem',
+        color: 'var(--text-muted)',
+        flexWrap: 'wrap',
+        gap: '8px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span className="pulse-dot pulse-dot-emerald"></span>
             <strong style={{ color: '#38bdf8', letterSpacing: '0.03em' }}>NASA EOSDIS / FIRMS</strong>
@@ -52,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
             Constellation: <strong style={{ color: 'var(--text-bright)' }}>Terra & Aqua (MODIS) • Suomi-NPP & NOAA-20 (VIIRS)</strong>
           </span>
           <span style={{ color: 'var(--border-strong)' }}>|</span>
-          <span style={{ color: 'var(--text-dim)', fontSize: '0.74rem' }}>
+          <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>
             Collection 6.1 & VNP14IMG Synchronized (2000–2025)
           </span>
         </div>
@@ -60,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={13} color="#f59e0b" />
-            <span style={{ color: '#fbbf24', fontWeight: 600 }}>Benchmark Scenarios:</span>
+            <span style={{ color: '#fbbf24', fontWeight: 600 }}>Benchmark Dilemmas:</span>
             <select
               defaultValue=""
               onChange={(e) => {
@@ -74,8 +107,8 @@ export const Header: React.FC<HeaderProps> = ({
                 color: '#fef3c7',
                 border: '1px solid rgba(245, 158, 11, 0.4)',
                 borderRadius: '6px',
-                padding: '3px 8px',
-                fontSize: '0.75rem',
+                padding: '2px 8px',
+                fontSize: '0.74rem',
                 cursor: 'pointer'
               }}
             >
@@ -83,15 +116,117 @@ export const Header: React.FC<HeaderProps> = ({
               <option value="false_surge">1. The 2012 False Surge Paradox (California)</option>
               <option value="punjab_transfer">2. Cross-Regime Calibration Breakdown (Punjab)</option>
               <option value="cloud_mask">3. The Invisible Fire Problem (Amazon Wet Season)</option>
-              <option value="record_siege">4. 2020 Historic Megafire Siege vs 2010 Baseline</option>
+              <option value="record_siege">4. 2020 Historic Megafire Siege vs 2010 Baseline (1.03M-acre August Complex)</option>
             </select>
           </div>
         </div>
       </div>
 
+      {/* Prominent Synthetic Demonstration Fixture Banner */}
+      {isDemonstrationActive && !isBannerDismissed && (
+        <div style={{
+          padding: '8px 24px',
+          background: 'linear-gradient(90deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.28) 100%)',
+          borderBottom: '1px solid rgba(245, 158, 11, 0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.8rem',
+          color: '#fef3c7',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertCircle size={16} color="#fbbf24" />
+            <span>
+              <strong style={{ color: '#fde047', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Synthetic Demonstration Fixtures Active:
+              </strong>{' '}
+              Currently displaying pre-computed demonstration records calibrated from NASA FIRMS archives.
+              You may upload raw NASA FIRMS CSV files at any time to evaluate real observational data.
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                background: 'rgba(0, 0, 0, 0.35)',
+                color: '#ffffff',
+                border: '1px solid rgba(254, 243, 199, 0.4)',
+                borderRadius: '6px',
+                padding: '3px 10px',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              <Upload size={12} />
+              Upload Real NASA FIRMS CSV
+            </button>
+            <button
+              onClick={() => setIsBannerDismissed(true)}
+              title="Dismiss banner"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#fef3c7',
+                cursor: 'pointer',
+                padding: '2px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <X size={15} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Real Uploaded Data Banner */}
+      {!isDemonstrationActive && uploadedRecordCount !== null && (
+        <div style={{
+          padding: '8px 24px',
+          background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%)',
+          borderBottom: '1px solid rgba(16, 185, 129, 0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.8rem',
+          color: '#d1fae5'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 size={16} color="#34d399" />
+            <span>
+              <strong style={{ color: '#6ee7b7' }}>LIVE NASA DATA LOADED:</strong>{' '}
+              Successfully ingested and projected {uploadedRecordCount.toLocaleString()} real NASA FIRMS active-fire records into the equal-area grid.
+            </span>
+          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn-secondary"
+            style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+          >
+            Upload Another CSV
+          </button>
+        </div>
+      )}
+
+      {/* Hidden File Input for Real FIRMS CSV */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".csv,.txt"
+        style={{ display: 'none' }}
+      />
+
       {/* Main Header Row */}
       <div style={{
-        padding: '14px 24px',
+        padding: '12px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -113,20 +248,20 @@ export const Header: React.FC<HeaderProps> = ({
             <Flame size={24} color="#ffffff" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h1 style={{ fontSize: '1.45rem', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                IGNIS Atlas
-              </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{
-                background: 'linear-gradient(90deg, #06b6d4, #f59e0b)',
+                background: 'linear-gradient(90deg, #38bdf8, #fbbf24)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                fontWeight: 700,
-                fontSize: '1.15rem'
+                fontWeight: 800,
+                fontSize: '1.4rem',
+                letterSpacing: '-0.02em',
+                lineHeight: 1
               }}>
                 FireTruth
               </span>
-              <span className="badge badge-cyan" style={{ fontSize: '0.68rem', padding: '2px 7px' }}>
+              <span style={{ color: 'var(--text-dim)', fontSize: '0.92rem', fontWeight: 600 }}>by IGNIS Atlas</span>
+              <span className="badge badge-fire" style={{ fontSize: '0.68rem', padding: '2px 7px' }}>
                 Evidence-Gated
               </span>
             </div>
@@ -178,6 +313,17 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
+          {/* Upload Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn-secondary"
+            title="Upload local NASA FIRMS CSV dataset to process in equal-area grid"
+            style={{ fontSize: '0.82rem', padding: '7px 12px' }}
+          >
+            <Upload size={14} />
+            Upload NASA CSV
+          </button>
+
           {/* Export CSV button */}
           <button
             onClick={onExportCsv}
@@ -185,7 +331,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Download full standardized CSV dataset with metadata and calibration parameters"
             style={{ fontSize: '0.82rem', padding: '7px 12px' }}
           >
-            <Download size={15} />
+            <Download size={14} />
             Export CSV
           </button>
 
@@ -201,7 +347,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tab Bar */}
+      {/* 8-Tab Navigation Bar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -211,40 +357,62 @@ export const Header: React.FC<HeaderProps> = ({
         overflowX: 'auto'
       }}>
         <TabButton
+          active={activeTab === 'overview'}
+          onClick={() => setActiveTab('overview')}
+          icon={<Flame size={15} />}
+          label="1. Overview"
+          badge="Mission"
+        />
+        <TabButton
           active={activeTab === 'explorer'}
           onClick={() => setActiveTab('explorer')}
-          icon={<Satellite size={16} />}
-          label="1. Global Fire Explorer"
-          badge="NASA Hotspots"
+          icon={<Satellite size={15} />}
+          label="2. Fire Explorer"
+          badge="FIRMS Map"
         />
         <TabButton
           active={activeTab === 'calendar'}
           onClick={() => setActiveTab('calendar')}
-          icon={<Calendar size={16} />}
-          label="2. Burning Calendar"
-          badge="2000–2025 Matrix"
+          icon={<Calendar size={15} />}
+          label="3. Burning Calendar"
+          badge="2000–2025"
         />
         <TabButton
           active={activeTab === 'lab'}
           onClick={() => setActiveTab('lab')}
-          icon={<Sliders size={16} />}
-          label="3. Sensor Harmonization Lab"
+          icon={<Sliders size={15} />}
+          label="4. Harmonization Lab"
           badge="B0 vs B1 vs B2"
+        />
+        <TabButton
+          active={activeTab === 'challenge'}
+          onClick={() => setActiveTab('challenge')}
+          icon={<Compass size={15} />}
+          label="5. Scientific Challenge"
+          badge="6 Steps"
+          highlight
         />
         <TabButton
           active={activeTab === 'resolver'}
           onClick={() => setActiveTab('resolver')}
-          icon={<ShieldCheck size={16} />}
-          label="4. Evidence Resolver"
-          badge="Signature Innovation"
+          icon={<ShieldCheck size={15} />}
+          label="6. Evidence Resolver"
+          badge="6 Gates"
           highlight
+        />
+        <TabButton
+          active={activeTab === 'dossier'}
+          onClick={() => setActiveTab('dossier')}
+          icon={<FileText size={15} />}
+          label="7. Scientific Dossier"
+          badge="Peer-Review"
         />
         <TabButton
           active={activeTab === 'science'}
           onClick={() => setActiveTab('science')}
-          icon={<Microscope size={16} />}
-          label="5. Explain the Science"
-          badge="Sensor Physics"
+          icon={<Microscope size={15} />}
+          label="8. Explain the Science"
+          badge="Physics"
         />
       </div>
     </header>
@@ -265,9 +433,9 @@ const TabButton: React.FC<{
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '12px 16px',
-        fontSize: '0.86rem',
+        gap: '7px',
+        padding: '11px 14px',
+        fontSize: '0.84rem',
         fontWeight: active ? 600 : 500,
         color: active ? 'var(--text-bright)' : 'var(--text-muted)',
         borderBottom: active 
@@ -277,7 +445,11 @@ const TabButton: React.FC<{
           ? (highlight ? 'rgba(255, 87, 34, 0.08)' : 'rgba(6, 182, 212, 0.06)') 
           : 'transparent',
         transition: 'all 0.15s ease',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        borderLeft: 'none',
+        borderRight: 'none',
+        borderTop: 'none',
+        cursor: 'pointer'
       }}
     >
       <span style={{ color: active ? (highlight ? 'var(--accent-fire)' : 'var(--accent-cyan)') : 'inherit' }}>
@@ -286,11 +458,11 @@ const TabButton: React.FC<{
       <span>{label}</span>
       {badge && (
         <span style={{
-          fontSize: '0.68rem',
-          padding: '1px 6px',
+          fontSize: '0.66rem',
+          padding: '1px 5px',
           borderRadius: '4px',
           background: active 
-            ? (highlight ? 'rgba(255, 87, 34, 0.2)' : 'rgba(6, 182, 212, 0.2)') 
+            ? (highlight ? 'rgba(255, 87, 34, 0.25)' : 'rgba(6, 182, 212, 0.25)') 
             : 'rgba(255, 255, 255, 0.06)',
           color: active 
             ? (highlight ? '#ff8a65' : '#38bdf8') 

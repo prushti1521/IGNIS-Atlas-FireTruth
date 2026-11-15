@@ -21,23 +21,13 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [selectedHotspot, setSelectedHotspot] = useState<FireHotspot | null>(null);
 
-  // Custom BBox coordinates
-  const [customBbox, setCustomBbox] = useState({
+  // Derived BBox coordinates from active region
+  const customBbox = {
     south: selectedRegion.bounds[0][0],
     west: selectedRegion.bounds[0][1],
     north: selectedRegion.bounds[1][0],
     east: selectedRegion.bounds[1][1]
-  });
-
-  // Keep bbox synced when region changes
-  useEffect(() => {
-    setCustomBbox({
-      south: selectedRegion.bounds[0][0],
-      west: selectedRegion.bounds[0][1],
-      north: selectedRegion.bounds[1][0],
-      east: selectedRegion.bounds[1][1]
-    });
-  }, [selectedRegion]);
+  };
 
   // Initialize Leaflet Map
   useEffect(() => {

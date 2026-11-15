@@ -246,7 +246,7 @@ export const ScienceExplainer: React.FC = () => {
             lineHeight: 1.5,
             color: 'var(--text-muted)'
           }}>
-            <strong style={{ color: 'var(--accent-cyan)' }}>Key Physical Insight:</strong> Because a VIIRS 375m pixel has an area 7.1 times smaller than a MODIS 1000m pixel, a given fire produces 7 times less thermal dilution. Small agricultural fires in Punjab and flanking forest burns trigger VIIRS readily while remaining completely invisible to MODIS!
+            <strong style={{ color: 'var(--accent-cyan)' }}>Key Physical Insight:</strong> Because a VIIRS 375m pixel has a nominal surface area approximately 7.11 times smaller than a MODIS 1000m pixel ((1,000 m)² / (375 m)² ≈ 7.11), a sub-pixel fire experiences substantially less thermal dilution. However, under real orbital conditions, point spread functions, off-nadir optical expansion, and regional fuel regimes dictate empirical detection ratios (e.g. California α = 3.68× vs Punjab α = 5.84×) rather than a uniform 7.11× scaling.
           </div>
         </div>
 

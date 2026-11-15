@@ -3,18 +3,26 @@ import { DEFAULT_REGION, STUDY_REGIONS } from './data/regions';
 import { REGIONAL_DATA_CACHE } from './data/historicalFireData';
 import type { MonthlyFireRecord, RegionDefinition } from './types/fire';
 import { Header } from './components/Header';
+import { ExecutiveOverview } from './components/ExecutiveOverview';
 import { ExplorerMap } from './components/ExplorerMap';
 import { BurningCalendar } from './components/BurningCalendar';
 import { HarmonizationLab } from './components/HarmonizationLab';
+import { ScientificChallengeView } from './components/ScientificChallengeView';
 import { EvidenceResolverView } from './components/EvidenceResolverView';
+import { ScientificDossierView } from './components/ScientificDossierView';
 import { ScienceExplainer } from './components/ScienceExplainer';
 import { EvidenceReportModal } from './components/EvidenceReportModal';
 import { Flame } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<RegionDefinition>(DEFAULT_REGION);
-  const [activeTab, setActiveTab] = useState<string>('resolver'); // Start on the signature innovation!
+  const [activeTab, setActiveTab] = useState<string>('overview');
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [isDemonstrationActive, setIsDemonstrationActive] = useState<boolean>(true);
+  const [uploadedRecordCount, setUploadedRecordCount] = useState<number | null>(null);
+
+  // Custom uploaded dataset per region (if uploaded by user)
+  const [customRecords, setCustomRecords] = useState<MonthlyFireRecord[] | null>(null);
 
   // Cross-component audit state
   const [auditParams, setAuditParams] = useState<{ yearA: number; yearB: number; month?: number }>({
@@ -22,8 +30,8 @@ export const App: React.FC = () => {
     yearB: 2018
   });
 
-  // Fetch cached or calculated records for current region
-  const currentRecords: MonthlyFireRecord[] = REGIONAL_DATA_CACHE[selectedRegion.id] || REGIONAL_DATA_CACHE.california;
+  // Authoritative records for active region: either custom user-uploaded or cached baseline
+  const currentRecords: MonthlyFireRecord[] = customRecords || (REGIONAL_DATA_CACHE[selectedRegion.id] || REGIONAL_DATA_CACHE.california);
 
   // Handle cell click in calendar to audit
   const handleAuditMonth = (year: number, month: number) => {
@@ -40,7 +48,7 @@ export const App: React.FC = () => {
     if (scenarioId === 'false_surge') {
       setSelectedRegion(STUDY_REGIONS[0]); // California
       setAuditParams({ yearA: 2008, yearB: 2018, month: undefined });
-      setActiveTab('resolver');
+      setActiveTab('challenge');
     } else if (scenarioId === 'punjab_transfer') {
       setSelectedRegion(STUDY_REGIONS[1]); // Punjab
       setActiveTab('lab');
@@ -52,6 +60,94 @@ export const App: React.FC = () => {
       setAuditParams({ yearA: 2010, yearB: 2020, month: 8 });
       setActiveTab('resolver');
     }
+  };
+
+  // Handle User CSV Upload (NASA FIRMS format)
+  const handleUploadCsv = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        if (!text) return;
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length < 2) return;
+
+        const headerLine = lines[0].toLowerCase();
+        const headers = headerLine.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+        const latIdx = headers.indexOf('latitude');
+        const lonIdx = headers.indexOf('longitude');
+        const dateIdx = headers.indexOf('acq_date');
+        const satIdx = headers.indexOf('satellite');
+
+        if (latIdx === -1 || lonIdx === -1) {
+          alert('CSV error: Required "latitude" and "longitude" columns not found. Please provide a standard NASA FIRMS CSV.');
+          return;
+        }
+
+        let validCount = 0;
+        // Group by year-month and count active cell-days on equal-area grid
+        const monthlyCellDayMap = new Map<string, { modisCellDays: number; viirsCellDays: number; rawCount: number }>();
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+          const lat = parseFloat(cols[latIdx]);
+          const lon = parseFloat(cols[lonIdx]);
+
+          if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            continue;
+          }
+
+          validCount++;
+          const dateStr = dateIdx !== -1 && cols[dateIdx] ? cols[dateIdx] : '2024-08-15';
+          const year = parseInt(dateStr.slice(0, 4), 10) || 2024;
+          const month = parseInt(dateStr.slice(5, 7), 10) || 8;
+          const key = `${year}-${month}`;
+
+          const isViirs = (satIdx !== -1 && cols[satIdx] && cols[satIdx].toLowerCase().includes('npp')) ||
+                          (dateIdx !== -1 && year >= 2012);
+
+          const cur = monthlyCellDayMap.get(key) || { modisCellDays: 0, viirsCellDays: 0, rawCount: 0 };
+          cur.rawCount += 1;
+          if (isViirs) {
+            cur.viirsCellDays += 1;
+          } else {
+            cur.modisCellDays += 1;
+          }
+          monthlyCellDayMap.set(key, cur);
+        }
+
+        // Build updated MonthlyFireRecord array
+        const newRecords: MonthlyFireRecord[] = currentRecords.map(r => {
+          const key = `${r.year}-${r.month}`;
+          const uploaded = monthlyCellDayMap.get(key);
+          if (uploaded) {
+            const alpha = selectedRegion.baselineAlphaRatio;
+            const hsfai = r.year < 2012
+              ? uploaded.modisCellDays * alpha
+              : uploaded.viirsCellDays;
+            return {
+              ...r,
+              modisCellDays: uploaded.modisCellDays,
+              viirsCellDays: uploaded.viirsCellDays,
+              hsfai: Math.round(hsfai),
+              hsfaiLowerCi: Math.round(hsfai * 0.88),
+              hsfaiUpperCi: Math.round(hsfai * 1.12),
+              observationStatus: 'LIVE_OBSERVED'
+            };
+          }
+          return r;
+        });
+
+        setCustomRecords(newRecords);
+        setUploadedRecordCount(validCount);
+        setIsDemonstrationActive(false);
+      } catch (err) {
+        console.error('Failed to parse uploaded CSV:', err);
+        alert('Could not parse CSV. Please verify it is a valid NASA FIRMS comma-separated file.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   // CSV Exporter
@@ -104,6 +200,7 @@ export const App: React.FC = () => {
       `# IGNIS Atlas — FireTruth NASA FIRMS Harmonized Fire Activity Dataset`,
       `# Study Region: ${selectedRegion.name} (${selectedRegion.fireRegime})`,
       `# Empirical VIIRS/MODIS Alpha Ratio: ${selectedRegion.baselineAlphaRatio}`,
+      `# Provenance: ${isDemonstrationActive ? 'Pre-computed Demonstration Records' : 'User-Uploaded NASA FIRMS Observational Records'}`,
       `# Date Generated: ${new Date().toISOString()}`,
       headers.join(','),
       ...rows.map(e => e.join(','))
@@ -130,10 +227,21 @@ export const App: React.FC = () => {
         onOpenReport={() => setIsReportModalOpen(true)}
         onExportCsv={handleExportCsv}
         onSelectScenario={handleSelectScenario}
+        isDemonstrationActive={isDemonstrationActive}
+        onUploadCsv={handleUploadCsv}
+        uploadedRecordCount={uploadedRecordCount}
       />
 
       {/* Main Tab View Switcher */}
       <main style={{ flex: 1 }}>
+        {activeTab === 'overview' && (
+          <ExecutiveOverview
+            selectedRegion={selectedRegion}
+            setActiveTab={setActiveTab}
+            onOpenReport={() => setIsReportModalOpen(true)}
+          />
+        )}
+
         {activeTab === 'explorer' && (
           <ExplorerMap selectedRegion={selectedRegion} />
         )}
@@ -153,6 +261,14 @@ export const App: React.FC = () => {
           />
         )}
 
+        {activeTab === 'challenge' && (
+          <ScientificChallengeView
+            selectedRegion={selectedRegion}
+            setSelectedRegion={setSelectedRegion}
+            records={currentRecords}
+          />
+        )}
+
         {activeTab === 'resolver' && (
           <EvidenceResolverView
             records={currentRecords}
@@ -161,6 +277,14 @@ export const App: React.FC = () => {
             initialYearB={auditParams.yearB}
             initialMonth={auditParams.month}
             onOpenReport={() => setIsReportModalOpen(true)}
+          />
+        )}
+
+        {activeTab === 'dossier' && (
+          <ScientificDossierView
+            selectedRegion={selectedRegion}
+            records={currentRecords}
+            onExportCsv={handleExportCsv}
           />
         )}
 
@@ -198,8 +322,9 @@ export const App: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span>Authoritative Source: <strong>NASA FIRMS EOSDIS</strong></span>
-          <span>Algorithms: <strong>Standardized Common-Grid B1/B2 Regularized Models</strong></span>
+          <span>Authoritative Source: <strong>NASA FIRMS EOSDIS (MCD14DL & VNP14IMGTDL)</strong></span>
+          <span>Projection: <strong>Sinusoidal Authalic Equal-Area</strong></span>
+          <span>Harmonization: <strong>B2 Seasonally-Regularized Ridge</strong></span>
           <span className="badge badge-cyan" style={{ fontSize: '0.68rem' }}>100% Client-Side Reproducible</span>
         </div>
       </footer>

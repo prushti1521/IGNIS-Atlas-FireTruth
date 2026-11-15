@@ -46,22 +46,24 @@ export interface RegionDefinition {
 export interface MonthlyFireRecord {
   year: number;
   month: number; // 1-12
-  modisRawHotspots: number;
-  viirsRawHotspots: number;
-  modisCellDays: number; // A_{M,m}
-  viirsCellDays: number; // A_{V,m}
+  isObserved: boolean;
+  observationStatus?: string;
+  modisRawHotspots: number | null;
+  viirsRawHotspots: number | null;
+  modisCellDays: number | null; // A_{M,m}
+  viirsCellDays: number | null; // A_{V,m}
   
   // Harmonized Satellite-Detected Fire Activity Index (HSFAI)
-  hsfai: number;
-  hsfaiLowerCi: number;
-  hsfaiUpperCi: number;
+  hsfai: number | null;
+  hsfaiLowerCi: number | null;
+  hsfaiUpperCi: number | null;
   
-  sensorCoverage: 'MODIS_ONLY' | 'OVERLAP' | 'VIIRS_ONLY';
+  sensorCoverage: 'UNOBSERVED' | 'MODIS_ONLY' | 'OVERLAP' | 'VIIRS_ONLY';
   modelApplied: 'B0_RAW' | 'B1_SCALED' | 'B2_SEASONAL_REGULARIZED';
   
-  historicalMedian: number;
-  anomalyAbsolute: number; // hsfai - historicalMedian
-  anomalyPercent: number; // (anomalyAbsolute / historicalMedian) * 100
+  historicalMedian: number | null;
+  anomalyAbsolute: number | null; // hsfai - historicalMedian
+  anomalyPercent: number | null; // (anomalyAbsolute / historicalMedian) * 100
   
   cloudCoverPercent: number;
   observationPassCount: number;
@@ -89,10 +91,12 @@ export interface CalibrationModelResult {
     heldoutRMSE: number;
     heldoutR2: number;
     heldoutMAPE: number;
+    relativeMapeReductionVsB0?: number;
+    relativeRmseReductionVsB0?: number;
   };
 }
 
-export type EvidenceGateStatus = 'PASS' | 'WARNING' | 'FAIL';
+export type EvidenceGateStatus = 'PASS' | 'WARNING' | 'FAIL' | 'NOT_EVALUATED';
 export type EvidenceOverallVerdict = 'SUPPORTED' | 'QUALIFIED' | 'INSUFFICIENT_EVIDENCE';
 
 export interface EvidenceGateItem {
@@ -105,10 +109,17 @@ export interface EvidenceGateItem {
   measuredValue: string;
   thresholdLabel: string;
   scientificImplication: string;
+  inputData?: string;
+  calculation?: string;
+  thresholdJustification?: string;
+  limitations?: string;
+  physicalMechanism?: string;
+  recommendedAction?: string;
 }
 
 export interface EvidenceAuditReport {
   id: string;
+  claimStatement: string;
   targetRegion: RegionDefinition;
   yearA: number;
   monthA?: number;

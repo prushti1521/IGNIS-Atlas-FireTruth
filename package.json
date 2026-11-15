@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "node tests/test_cross_language.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

@@ -87,7 +87,7 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                   />
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                  Used exclusively to fit calibration parameters α and β.
+                  Used exclusively to fit calibration parameters α and seasonal factors.
                 </span>
               </div>
 
@@ -100,32 +100,32 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                   </strong>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                  Strictly held-out to evaluate out-of-sample generalization error and detect overfitting.
+                  Strictly held-out to evaluate out-of-sample generalization error with zero data leakage.
                 </span>
               </div>
 
-              {/* Grid Size Selection */}
+              {/* Equal-Area Grid Size Selection */}
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  Common Equal-Area Spatial Grid (I_{'{s,g,d}'}):
+                  Equal-Area Spatial Grid (Cosine-Projected):
                 </span>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  {[0.1, 0.25, 0.5].map(sz => (
+                  {[10, 25, 50].map(sz => (
                     <button
                       key={sz}
-                      onClick={() => setParams(prev => ({ ...prev, gridSizeDeg: sz }))}
+                      onClick={() => setParams(prev => ({ ...prev, cellKm: sz }))}
                       style={{
                         flex: 1,
                         padding: '6px',
                         borderRadius: '6px',
                         fontSize: '0.75rem',
                         fontWeight: 600,
-                        background: params.gridSizeDeg === sz ? 'rgba(6, 182, 212, 0.2)' : 'var(--bg-surface-elevated)',
-                        color: params.gridSizeDeg === sz ? '#38bdf8' : 'var(--text-dim)',
-                        border: params.gridSizeDeg === sz ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'
+                        background: params.cellKm === sz ? 'rgba(6, 182, 212, 0.2)' : 'var(--bg-surface-elevated)',
+                        color: params.cellKm === sz ? '#38bdf8' : 'var(--text-dim)',
+                        border: params.cellKm === sz ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'
                       }}
                     >
-                      {sz}° (~{Math.round(sz * 110)}km)
+                      {sz} km (~{sz * sz} km²)
                     </button>
                   ))}
                 </div>
@@ -151,18 +151,22 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
 
           {/* Mathematical Formulations Card */}
           <div className="glass-panel" style={{ padding: '18px' }}>
-            <h3 style={{ fontSize: '0.95rem', marginBottom: '10px' }}>Harmonization Formulations</h3>
+            <h3 style={{ fontSize: '0.95rem', marginBottom: '10px' }}>Harmonization Formulations & Physics</h3>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 12px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
-                <strong>Common-Grid Cell-Day:</strong><br />
+                <strong>Equal-Area Cell-Day Discretization:</strong><br />
                 A_{'{s,m}'} = ∑_{'{g}'} ∑_{'{d ∈ m}'} I_{'{s,g,d}'}
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 12px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
+                <strong>Nominal Pixel Area Ratio:</strong><br />
+                (1,000 m)² / (375 m)² = 1,000,000 / 140,625 ≈ 7.11×
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 12px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
                 <strong>B1 Model:</strong> Â_{'{V,m}'} = α × A_{'{M,m}'}<br />
                 <strong>B2 Model:</strong> Â_{'{V,m}'} = α_k × A_{'{M,m}'} (with seasonal L2 shrinkage)
               </div>
-              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
-                *Notice: Cell-day aggregation reduces multi-detection clustering within a single satellite pass while preserving regional fire persistence.
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', lineHeight: 1.5 }}>
+                *Notice: The 7.11× nominal pixel area ratio does not translate into a universal 7.11× detection increase under real observation conditions. Sub-pixel thermal dilution, off-nadir optical expansion (bow-tie effect), and regional fire size distributions dictate empirical scaling ratios (e.g. California α = 3.68× vs Punjab α = 5.84×).
               </p>
             </div>
           </div>
@@ -175,7 +179,7 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BarChart3 size={16} color="var(--accent-cyan)" />
-                <h3 style={{ fontSize: '1rem' }}>Held-Out Validation Benchmark (2019–2024)</h3>
+                <h3 style={{ fontSize: '1rem' }}>Held-Out Validation Benchmark ({params.testStartYear}–{params.testEndYear})</h3>
               </div>
               <span className="badge badge-emerald">
                 Recommended: {bestModel.id} ({bestModel.name.split('—')[1]})
@@ -191,6 +195,7 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                   <th style={{ textAlign: 'right', padding: '8px 6px' }}>TEST MAE</th>
                   <th style={{ textAlign: 'right', padding: '8px 6px', color: '#fbbf24' }}>TEST RMSE</th>
                   <th style={{ textAlign: 'right', padding: '8px 6px', color: '#38bdf8' }}>TEST MAPE</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px', color: '#34d399' }}>REL. REDUCTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,6 +231,9 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                       <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: isB0 ? '#f87171' : '#38bdf8' }}>
                         {m.metrics.heldoutMAPE}%
                       </td>
+                      <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#34d399' }}>
+                        {isB0 ? 'Baseline' : `-${m.metrics.relativeMapeReductionVsB0 ?? 0}%`}
+                      </td>
                     </tr>
                   );
                 })}
@@ -249,120 +257,116 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38bdf8' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>Train ({params.trainStartYear}–{params.trainEndYear})</span>
+                  <span style={{ color: 'var(--text-muted)' }}>Train (2012–{params.trainEndYear})</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fbbf24' }} />
                   <span style={{ color: 'var(--text-muted)' }}>Held-Out Test ({params.testStartYear}–{params.testEndYear})</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: '16px', height: '2px', background: 'var(--accent-fire)' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>Fitted (α={b1.alpha}x)</span>
+                  <span style={{ width: '12px', height: '2px', background: 'var(--accent-fire)' }} />
+                  <span style={{ color: 'var(--text-dim)' }}>1:1 Parity</span>
                 </div>
               </div>
             </div>
 
-            {/* SVG Canvas Scatter */}
+            {/* SVG Scatter Plot */}
             <div style={{ position: 'relative', width: '100%', height: `${plotHeight}px`, background: 'rgba(0,0,0,0.25)', borderRadius: '8px' }}>
-              <svg width="100%" height={plotHeight} viewBox={`0 0 ${plotWidth} ${plotHeight}`} style={{ overflow: 'visible' }}>
-                {/* Axes */}
-                <line x1={padding} y1={plotHeight - padding} x2={plotWidth - padding} y2={plotHeight - padding} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
-                <line x1={padding} y1={padding} x2={padding} y2={plotHeight - padding} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
-
-                {/* Grid ticks */}
+              <svg width="100%" height="100%" viewBox={`0 0 ${plotWidth} ${plotHeight}`}>
+                {/* Grid Lines */}
                 {[0.25, 0.5, 0.75, 1.0].map(frac => {
-                  const val = Math.round(maxVal * frac);
-                  const x = scaleX(val);
-                  const y = scaleY(val);
+                  const x = scaleX(frac * maxVal);
+                  const y = scaleY(frac * maxVal);
                   return (
                     <g key={frac}>
-                      {/* Vertical grid line */}
-                      <line x1={x} y1={padding} x2={x} y2={plotHeight - padding} stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2" />
-                      <text x={x} y={plotHeight - padding + 16} fill="var(--text-dim)" fontSize="9" textAnchor="middle" fontFamily="var(--font-mono)">
-                        {val}
-                      </text>
-                      {/* Horizontal grid line */}
-                      <line x1={padding} y1={y} x2={plotWidth - padding} y2={y} stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2" />
-                      <text x={padding - 8} y={y + 3} fill="var(--text-dim)" fontSize="9" textAnchor="end" fontFamily="var(--font-mono)">
-                        {val}
-                      </text>
+                      <line x1={x} y1={padding} x2={x} y2={plotHeight - padding} stroke="rgba(255,255,255,0.05)" />
+                      <line x1={padding} y1={y} x2={plotWidth - padding} y2={y} stroke="rgba(255,255,255,0.05)" />
                     </g>
                   );
                 })}
 
-                {/* 1:1 Parity line (B0 uncalibrated reference) */}
+                {/* 1:1 Parity Line (Raw B0) */}
                 <line
-                  x1={padding}
-                  y1={plotHeight - padding}
+                  x1={scaleX(0)}
+                  y1={scaleY(0)}
                   x2={scaleX(maxVal)}
                   y2={scaleY(maxVal)}
-                  stroke="rgba(239, 68, 68, 0.5)"
-                  strokeDasharray="4,4"
-                  strokeWidth={1.5}
+                  stroke="#ef4444"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 4"
                 />
 
-                {/* Fitted calibration line (B1: y = alpha * x) */}
+                {/* Empirical Calibration Line (B1) */}
                 <line
-                  x1={padding}
-                  y1={plotHeight - padding}
+                  x1={scaleX(0)}
+                  y1={scaleY(0)}
                   x2={scaleX(maxVal / b1.alpha)}
                   y2={scaleY(maxVal)}
-                  stroke="var(--accent-fire)"
-                  strokeWidth={2}
+                  stroke="#06b6d4"
+                  strokeWidth="2"
                 />
 
-                {/* Scatter Points */}
-                {scatterPoints.map((pt, idx) => {
-                  const cx = scaleX(pt.modis);
-                  const cy = scaleY(pt.viirs);
-                  const isHovered = hoveredPoint?.idx === idx;
+                {/* Data Points */}
+                {scatterPoints.map((p, idx) => {
+                  const cx = scaleX(p.modis);
+                  const cy = scaleY(p.viirs);
+                  const isTest = p.isTest;
+                  const color = isTest ? '#fbbf24' : '#38bdf8';
 
                   return (
                     <circle
                       key={idx}
                       cx={cx}
                       cy={cy}
-                      r={isHovered ? 6 : pt.isTest ? 4.5 : 3.5}
-                      fill={pt.isTest ? '#fbbf24' : '#38bdf8'}
-                      stroke="#ffffff"
-                      strokeWidth={isHovered ? 2 : 0.7}
-                      opacity={isHovered ? 1 : 0.85}
+                      r={isTest ? 4.5 : 3.5}
+                      fill={color}
+                      opacity={0.85}
+                      stroke="#0d1322"
+                      strokeWidth={1}
                       style={{ cursor: 'pointer', transition: 'r 0.1s ease' }}
-                      onMouseEnter={() => setHoveredPoint({ ...pt, idx })}
+                      onMouseEnter={() => setHoveredPoint(p)}
                       onMouseLeave={() => setHoveredPoint(null)}
                     />
                   );
                 })}
+
+                {/* Axis Labels */}
+                <text x={plotWidth / 2} y={plotHeight - 10} fill="var(--text-dim)" fontSize="10" textAnchor="middle">
+                  MODIS Active Cell-Days (A_Mm)
+                </text>
+                <text
+                  x={-plotHeight / 2}
+                  y={14}
+                  fill="var(--text-dim)"
+                  fontSize="10"
+                  textAnchor="middle"
+                  transform="rotate(-90)"
+                >
+                  VIIRS Active Cell-Days (A_Vm)
+                </text>
               </svg>
 
-              {/* Axis Titles */}
-              <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                MODIS Cell-Days (A_M,m)
-              </div>
-              <div style={{ position: 'absolute', top: '50%', left: '4px', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left top', fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                VIIRS Cell-Days (A_V,m)
-              </div>
-
-              {/* Hovered Point Card */}
+              {/* Tooltip */}
               {hoveredPoint && (
                 <div style={{
                   position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  background: 'rgba(14, 21, 38, 0.95)',
+                  top: '10px',
+                  right: '10px',
+                  background: 'rgba(10, 15, 29, 0.95)',
                   border: '1px solid var(--accent-cyan)',
-                  borderRadius: '6px',
                   padding: '8px 12px',
-                  fontSize: '0.75rem',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
                   fontFamily: 'var(--font-mono)',
-                  boxShadow: 'var(--shadow-md)'
+                  boxShadow: 'var(--shadow-md)',
+                  pointerEvents: 'none'
                 }}>
                   <div style={{ fontWeight: 700, color: hoveredPoint.isTest ? '#fbbf24' : '#38bdf8' }}>
-                    {hoveredPoint.year} - Month {hoveredPoint.month} ({hoveredPoint.isTest ? 'Held-Out Test' : 'Train'})
+                    {hoveredPoint.year}-M{hoveredPoint.month.toString().padStart(2, '0')} ({hoveredPoint.isTest ? 'Held-Out Test' : 'Train'})
                   </div>
-                  <div>MODIS: {hoveredPoint.modis} cell-days</div>
-                  <div>VIIRS: {hoveredPoint.viirs} cell-days</div>
-                  <div>Ratio: {(hoveredPoint.viirs / hoveredPoint.modis).toFixed(2)}x</div>
+                  <div>MODIS A_Mm: {hoveredPoint.modis}</div>
+                  <div>VIIRS A_Vm: {hoveredPoint.viirs}</div>
+                  <div>Empirical Ratio: {(hoveredPoint.viirs / Math.max(1, hoveredPoint.modis)).toFixed(2)}x</div>
                 </div>
               )}
             </div>

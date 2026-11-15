@@ -1,0 +1,138 @@
+{
+  "manifest_version": "2.1.0",
+  "project_title": "IGNIS Atlas — FireTruth: Evidence-Gated NASA Satellite Fire Harmonization",
+  "generated_utc": "2026-11-08T00:00:00Z",
+  "provenance_hash_sha256": "1b060834e7d465e3fbb63c77d281ade75e3058ba1609171802018d9fd3b50a72",
+  "authoritative_data_archives": [
+    {
+      "sensor": "MODIS",
+      "satellites": ["Terra", "Aqua"],
+      "product": "MCD14DL / MODIS Standard Science Quality Active Fire",
+      "collection": "Collection 6.1",
+      "resolution_nadir_m": 1000,
+      "archive_url": "https://firms.modaps.eosdis.nasa.gov/download/",
+      "doi": "10.5067/FIRMS/MODIS/MCD14DL.NRT.0061",
+      "temporal_coverage": "2000-11-01 to Present",
+      "attributes_ingested": ["latitude", "longitude", "brightness", "scan", "track", "acq_date", "acq_time", "satellite", "confidence", "version", "bright_t31", "frp", "daynight"]
+    },
+    {
+      "sensor": "VIIRS",
+      "satellites": ["Suomi-NPP"],
+      "product": "VNP14IMGTDL Standard Science Quality Active Fire",
+      "collection": "Collection 2 (VNP14IMG)",
+      "resolution_nadir_m": 375,
+      "archive_url": "https://firms.modaps.eosdis.nasa.gov/download/",
+      "doi": "10.5067/FIRMS/VIIRS/VNP14IMGT.NRT.002",
+      "temporal_coverage": "2012-01-20 to Present",
+      "attributes_ingested": ["latitude", "longitude", "bright_ti4", "scan", "track", "acq_date", "acq_time", "satellite", "confidence", "version", "bright_ti5", "frp", "daynight"]
+    },
+    {
+      "sensor": "VIIRS",
+      "satellites": ["NOAA-20 (JPSS-1)"],
+      "product": "VJ114IMGTDL Standard Science Quality Active Fire",
+      "collection": "Collection 2 (VJ114IMG)",
+      "resolution_nadir_m": 375,
+      "archive_url": "https://firms.modaps.eosdis.nasa.gov/download/",
+      "doi": "10.5067/FIRMS/VIIRS/VJ114IMGT.NRT.002",
+      "temporal_coverage": "2018-01-05 to Present",
+      "attributes_ingested": ["latitude", "longitude", "bright_ti4", "scan", "track", "acq_date", "acq_time", "satellite", "confidence", "version", "bright_ti5", "frp", "daynight"]
+    }
+  ],
+  "study_regimes": [
+    {
+      "id": "california",
+      "name": "California, USA",
+      "fire_regime": "Temperate Wildfire (Forest & Chaparral)",
+      "bounding_box_wgs84": {
+        "south_lat": 32.5,
+        "west_lon": -124.4,
+        "north_lat": 42.0,
+        "east_lon": -114.1
+      },
+      "observations_count": 312,
+      "calibration_ratio_alpha": 3.68,
+      "heldout_test_metrics_2019_2024": {
+        "b0_raw_rmse": 3163.1,
+        "b0_raw_mape_percent": 73.0,
+        "b1_scaled_rmse": 117.1,
+        "b1_scaled_mape_percent": 2.4,
+        "b2_seasonal_rmse": 144.7,
+        "b2_seasonal_mape_percent": 2.4,
+        "relative_mape_reduction_percent": 96.8
+      }
+    },
+    {
+      "id": "punjab",
+      "name": "Punjab & Haryana, India",
+      "fire_regime": "Agricultural Residue Burning (Post-harvest)",
+      "bounding_box_wgs84": {
+        "south_lat": 28.4,
+        "west_lon": 73.8,
+        "north_lat": 32.5,
+        "east_lon": 77.6
+      },
+      "observations_count": 312,
+      "calibration_ratio_alpha": 5.84,
+      "heldout_test_metrics_2019_2024": {
+        "b0_raw_rmse": 2249.3,
+        "b0_raw_mape_percent": 83.0,
+        "b1_scaled_rmse": 71.9,
+        "b1_scaled_mape_percent": 2.4,
+        "b2_seasonal_rmse": 72.0,
+        "b2_seasonal_mape_percent": 2.4,
+        "relative_mape_reduction_percent": 97.1
+      }
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon Basin & Pantanal, Brazil",
+      "fire_regime": "Tropical Deforestation & Peat Smoldering",
+      "bounding_box_wgs84": {
+        "south_lat": -18.0,
+        "west_lon": -65.0,
+        "north_lat": -2.0,
+        "east_lon": -48.0
+      },
+      "observations_count": 312,
+      "calibration_ratio_alpha": 4.15,
+      "heldout_test_metrics_2019_2024": {
+        "b0_raw_rmse": 9441.5,
+        "b0_raw_mape_percent": 76.0,
+        "b1_scaled_rmse": 346.0,
+        "b1_scaled_mape_percent": 2.4,
+        "b2_seasonal_rmse": 349.9,
+        "b2_seasonal_mape_percent": 2.4,
+        "relative_mape_reduction_percent": 96.9
+      }
+    },
+    {
+      "id": "australia",
+      "name": "SE Australia (NSW & Victoria)",
+      "fire_regime": "Subtropical Bushfire & Pyrocumulonimbus",
+      "bounding_box_wgs84": {
+        "south_lat": -38.5,
+        "west_lon": 145.0,
+        "north_lat": -28.5,
+        "east_lon": 154.0
+      },
+      "observations_count": 312,
+      "calibration_ratio_alpha": 3.42,
+      "heldout_test_metrics_2019_2024": {
+        "b0_raw_rmse": 5631.5,
+        "b0_raw_mape_percent": 70.9,
+        "b1_scaled_rmse": 239.7,
+        "b1_scaled_mape_percent": 2.4,
+        "b2_seasonal_rmse": 244.0,
+        "b2_seasonal_mape_percent": 2.4,
+        "relative_mape_reduction_percent": 96.6
+      }
+    }
+  ],
+  "verification_commands": {
+    "python_pipeline": "python -m science.pipeline",
+    "python_evaluation": "python -m science.run_evaluation",
+    "pytest_suite": "pytest",
+    "frontend_build": "npm run build"
+  }
+}
+

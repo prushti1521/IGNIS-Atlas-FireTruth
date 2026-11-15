@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { CalendarMetricMode, ColorRampType, MonthlyFireRecord, RegionDefinition } from '../types/fire';
-import { Calendar, Eye, Sparkles, ShieldCheck, Info } from 'lucide-react';
+import { Calendar, Eye, Sparkles, ShieldCheck } from 'lucide-react';
 
 interface BurningCalendarProps {
   records: MonthlyFireRecord[];
@@ -21,37 +21,46 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
   const years = Array.from(new Set(records.map(r => r.year))).sort((a, b) => b - a); // newest to oldest
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // Calculate dynamic maximums for normalization
-  const maxHsfai = Math.max(...records.map(r => r.hsfai), 10);
-  const maxModis = Math.max(...records.map(r => r.modisCellDays), 10);
-  const maxViirs = Math.max(...records.map(r => r.viirsCellDays), 10);
-  const maxAbsAnomaly = Math.max(...records.map(r => Math.abs(r.anomalyAbsolute)), 10);
+  // Calculate dynamic maximums for normalization with safe null-filtering
+  const validHsfai = records.map(r => r.hsfai).filter((v): v is number => v !== null);
+  const maxHsfai = validHsfai.length > 0 ? Math.max(...validHsfai, 10) : 10;
+
+  const validModis = records.map(r => r.modisCellDays).filter((v): v is number => v !== null);
+  const maxModis = validModis.length > 0 ? Math.max(...validModis, 10) : 10;
+
+  const validViirs = records.map(r => r.viirsCellDays).filter((v): v is number => v !== null);
+  const maxViirs = validViirs.length > 0 ? Math.max(...validViirs, 10) : 10;
+
+  const validAnom = records.map(r => r.anomalyAbsolute).filter((v): v is number => v !== null);
+  const maxAbsAnomaly = validAnom.length > 0 ? Math.max(...validAnom.map(Math.abs), 10) : 10;
 
   // Color Mapping functions
   const getCellColor = (record: MonthlyFireRecord): { background: string; textColor: string } => {
+    if (!record.isObserved || record.hsfai === null) {
+      return { background: 'rgba(255, 255, 255, 0.02)', textColor: 'var(--text-dim)' };
+    }
+
     let normalized = 0;
 
     if (metricMode === 'hsfai') {
       normalized = Math.min(1, Math.max(0, record.hsfai / maxHsfai));
     } else if (metricMode === 'raw_modis') {
-      normalized = Math.min(1, Math.max(0, record.modisCellDays / maxModis));
+      const mVal = record.modisCellDays ?? 0;
+      normalized = Math.min(1, Math.max(0, mVal / maxModis));
     } else if (metricMode === 'raw_viirs') {
-      if (record.year < 2012) {
+      if (record.year < 2012 || record.viirsCellDays === null) {
         return { background: 'rgba(255, 255, 255, 0.02)', textColor: 'var(--text-dim)' };
       }
       normalized = Math.min(1, Math.max(0, record.viirsCellDays / maxViirs));
     } else if (metricMode === 'anomaly_abs' || metricMode === 'anomaly_pct') {
-      // Divergent anomaly scale: blue (negative) -> neutral dark -> crimson red (positive)
-      const val = record.anomalyAbsolute;
+      const val = record.anomalyAbsolute ?? 0;
       const ratio = Math.min(1, Math.abs(val) / maxAbsAnomaly);
       if (val > 0) {
-        // Positive fire anomaly (more fire than median)
         return {
           background: `rgba(239, 68, 68, ${0.15 + ratio * 0.82})`,
           textColor: ratio > 0.4 ? '#ffffff' : '#fca5a5'
         };
       } else {
-        // Negative fire anomaly (less fire than median)
         return {
           background: `rgba(59, 130, 246, ${0.12 + ratio * 0.75})`,
           textColor: ratio > 0.4 ? '#ffffff' : '#93c5fd'
@@ -61,28 +70,24 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
 
     // Apply color ramps
     if (colorRamp === 'magma') {
-      // Thermal infrared: black -> dark purple -> fire orange -> bright yellow
       if (normalized < 0.05) return { background: '#0b0f19', textColor: 'var(--text-dim)' };
       if (normalized < 0.25) return { background: '#3b1443', textColor: '#e9d5ff' };
       if (normalized < 0.50) return { background: '#8c2950', textColor: '#fce7f3' };
       if (normalized < 0.75) return { background: '#db5627', textColor: '#ffffff' };
       return { background: '#f6b432', textColor: '#000000' };
     } else if (colorRamp === 'cividis') {
-      // Color-vision deficiency optimized: dark blue -> slate -> gold
       if (normalized < 0.05) return { background: '#00204d', textColor: '#93c5fd' };
       if (normalized < 0.30) return { background: '#264264', textColor: '#bfdbfe' };
       if (normalized < 0.60) return { background: '#596970', textColor: '#f8fafc' };
       if (normalized < 0.85) return { background: '#a5975d', textColor: '#000000' };
       return { background: '#ffea46', textColor: '#000000' };
     } else if (colorRamp === 'viridis') {
-      // Classic remote sensing: deep purple -> teal -> yellow-green
       if (normalized < 0.05) return { background: '#440154', textColor: '#e9d5ff' };
       if (normalized < 0.30) return { background: '#3b528b', textColor: '#dbeafe' };
       if (normalized < 0.60) return { background: '#21918c', textColor: '#ffffff' };
       if (normalized < 0.85) return { background: '#5ec962', textColor: '#000000' };
       return { background: '#fde725', textColor: '#000000' };
     } else {
-      // Divergent anomaly fallback
       const ratio = normalized;
       return {
         background: `rgba(245, 158, 11, ${0.1 + ratio * 0.85})`,
@@ -92,17 +97,20 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
   };
 
   const getDisplayedValue = (record: MonthlyFireRecord): string => {
+    if (!record.isObserved || record.hsfai === null) return '—';
     if (metricMode === 'hsfai') return record.hsfai.toLocaleString();
-    if (metricMode === 'raw_modis') return record.modisCellDays.toLocaleString();
+    if (metricMode === 'raw_modis') return (record.modisCellDays ?? 0).toLocaleString();
     if (metricMode === 'raw_viirs') {
-      if (record.year < 2012) return '—';
+      if (record.year < 2012 || record.viirsCellDays === null) return '—';
       return record.viirsCellDays.toLocaleString();
     }
     if (metricMode === 'anomaly_abs') {
+      if (record.anomalyAbsolute === null) return '—';
       const prefix = record.anomalyAbsolute > 0 ? '+' : '';
       return `${prefix}${record.anomalyAbsolute}`;
     }
     if (metricMode === 'anomaly_pct') {
+      if (record.anomalyPercent === null) return '—';
       const prefix = record.anomalyPercent > 0 ? '+' : '';
       return `${prefix}${record.anomalyPercent}%`;
     }
@@ -112,96 +120,130 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
   return (
     <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Module Banner */}
-      <div style={{
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calendar size={22} color="var(--accent-fire)" />
+            <h2 style={{ fontSize: '1.4rem' }}>Burning Activity Matrix (2000–2025)</h2>
+            <span className="badge badge-fire">26-Year Multi-Decadal Time Series</span>
+          </div>
+          <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Harmonized satellite active-fire history for <strong>{selectedRegion.name}</strong>.
+            Click any month to inspect calibration parameters, uncertainty bounds, and trigger an automated Evidence Audit.
+          </p>
+        </div>
+      </div>
+
+      {/* Control Bar: Metric Selector & Accessible Color Ramps */}
+      <div className="glass-panel" style={{
+        padding: '14px 18px',
+        marginBottom: '20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '20px'
+        gap: '16px'
       }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Calendar size={22} color="var(--accent-cyan)" />
-            <h2 style={{ fontSize: '1.4rem' }}>Historical Burning Activity Calendar</h2>
-            <span className="badge badge-cyan">2000–2025 Multi-Decadal Matrix</span>
-          </div>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Unified time series harmonizing 25+ years of active fire hotspots on an equal-area common grid.
-            Select any cell to inspect satellite passes and evaluate evidence.
-          </p>
+        {/* Metric Mode Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 600 }}>VIEW METRIC:</span>
+          
+          <button
+            onClick={() => setMetricMode('hsfai')}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              background: metricMode === 'hsfai' ? 'rgba(6, 182, 212, 0.2)' : 'var(--bg-surface-elevated)',
+              color: metricMode === 'hsfai' ? '#38bdf8' : 'var(--text-muted)',
+              border: metricMode === 'hsfai' ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'
+            }}
+          >
+            ★ Harmonized Index (HSFAI)
+          </button>
+
+          <button
+            onClick={() => setMetricMode('anomaly_pct')}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              background: metricMode === 'anomaly_pct' ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-surface-elevated)',
+              color: metricMode === 'anomaly_pct' ? '#f87171' : 'var(--text-muted)',
+              border: metricMode === 'anomaly_pct' ? '1px solid var(--accent-fire)' : '1px solid var(--border-subtle)'
+            }}
+          >
+            Detected Activity Anomaly (%)
+          </button>
+
+          <button
+            onClick={() => setMetricMode('raw_modis')}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              background: metricMode === 'raw_modis' ? 'rgba(245, 158, 11, 0.2)' : 'var(--bg-surface-elevated)',
+              color: metricMode === 'raw_modis' ? '#fbbf24' : 'var(--text-dim)',
+              border: metricMode === 'raw_modis' ? '1px solid #f59e0b' : '1px solid var(--border-subtle)'
+            }}
+          >
+            Raw MODIS (1km)
+          </button>
+
+          <button
+            onClick={() => setMetricMode('raw_viirs')}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              background: metricMode === 'raw_viirs' ? 'rgba(16, 185, 129, 0.2)' : 'var(--bg-surface-elevated)',
+              color: metricMode === 'raw_viirs' ? '#34d399' : 'var(--text-dim)',
+              border: metricMode === 'raw_viirs' ? '1px solid #10b981' : '1px solid var(--border-subtle)'
+            }}
+          >
+            Raw VIIRS (375m, 2012+)
+          </button>
         </div>
 
-        {/* Calendar Control Selectors */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          {/* Metric Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Metric Mode:</span>
-            <select
-              value={metricMode}
-              onChange={e => setMetricMode(e.target.value as CalendarMetricMode)}
-              style={{ fontSize: '0.82rem', fontWeight: 600, padding: '6px 10px' }}
-            >
-              <option value="hsfai">Harmonized HSFAI (Standardized Cell-Days)</option>
-              <option value="raw_modis">Raw MODIS Only (Terra/Aqua 1km)</option>
-              <option value="raw_viirs">Raw VIIRS Only (S-NPP 375m, 2012+)</option>
-              <option value="anomaly_abs">Historical Median Anomaly (Δ Cell-Days)</option>
-              <option value="anomaly_pct">Relative Anomaly (% vs Multi-Year Median)</option>
-            </select>
-          </div>
-
-          {/* Color Ramp Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Palette:</span>
-            <select
-              value={colorRamp}
-              onChange={e => setColorRamp(e.target.value as ColorRampType)}
-              style={{ fontSize: '0.82rem', padding: '6px 10px' }}
-            >
-              <option value="magma">NASA Magma (Thermal IR)</option>
-              <option value="cividis">Cividis (Accessible CVD-Friendly)</option>
-              <option value="viridis">Viridis (Remote Sensing)</option>
-              <option value="divergent_anomaly">Divergent Fire Anomaly (Blue/Red)</option>
-            </select>
-          </div>
+        {/* Color Palette Toggle (Color-Vision Accessibility) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 600 }}>PALETTE:</span>
+          <select
+            value={colorRamp}
+            onChange={e => setColorRamp(e.target.value as ColorRampType)}
+            style={{ fontSize: '0.76rem', padding: '5px 10px' }}
+          >
+            <option value="magma">Magma (Thermal IR)</option>
+            <option value="cividis">Cividis (Color-Blind Safe)</option>
+            <option value="viridis">Viridis (NASA Remote Sensing)</option>
+            <option value="divergent_anomaly">Divergent Anomaly (Blue-Red)</option>
+          </select>
         </div>
       </div>
 
-      {/* Main Grid Card */}
-      <div className="glass-panel" style={{ padding: '20px', overflowX: 'auto' }}>
-        {/* Table Container */}
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '3px', fontSize: '0.78rem' }}>
+      {/* Main 26-Year Calendar Grid Table */}
+      <div className="glass-panel" style={{ padding: '20px', overflowX: 'auto', marginBottom: '24px' }}>
+        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '3px', fontSize: '0.8rem' }}>
           <thead>
             <tr>
-              <th style={{ padding: '8px 12px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: 700, width: '70px' }}>
-                YEAR
-              </th>
-              {monthLabels.map((m, idx) => (
-                <th key={m} style={{
-                  padding: '8px 4px',
-                  textAlign: 'center',
-                  color: selectedRegion.primaryPeakMonths.includes(idx + 1) ? '#fbbf24' : 'var(--text-dim)',
-                  fontWeight: selectedRegion.primaryPeakMonths.includes(idx + 1) ? 700 : 500,
-                  fontSize: '0.8rem'
-                }}>
-                  {m}
-                  {selectedRegion.primaryPeakMonths.includes(idx + 1) && (
-                    <span style={{ display: 'block', fontSize: '0.62rem', color: '#fbbf24' }}>● Peak</span>
-                  )}
+              <th style={{ textAlign: 'left', padding: '8px', color: 'var(--text-dim)', width: '80px' }}>YEAR</th>
+              {monthLabels.map((lbl, idx) => (
+                <th key={idx} style={{ textAlign: 'center', padding: '8px 4px', color: 'var(--text-dim)', minWidth: '55px' }}>
+                  {lbl}
                 </th>
               ))}
-              <th style={{ padding: '8px 8px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>
-                ANNUAL HSFAI
-              </th>
-              <th style={{ padding: '8px 8px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: 600 }}>
-                HISTORICAL CONTEXT
-              </th>
+              <th style={{ textAlign: 'right', padding: '8px', color: 'var(--text-dim)', minWidth: '90px' }}>ANNUAL</th>
+              <th style={{ textAlign: 'left', padding: '8px', color: 'var(--text-dim)', minWidth: '220px' }}>NOTABLE EVENT / HISTORIC CONTEXT</th>
             </tr>
           </thead>
           <tbody>
             {years.map(yr => {
               const yearRecs = records.filter(r => r.year === yr).sort((a, b) => a.month - b.month);
-              const totalAnnualHsfai = yearRecs.reduce((sum, r) => sum + r.hsfai, 0);
+              const totalAnnualHsfai = yearRecs.reduce((sum, r) => sum + (r.hsfai ?? 0), 0);
               const notableYearEvent = yearRecs.find(r => r.notableEvent)?.notableEvent;
               const isPreViirs = yr < 2012;
 
@@ -236,6 +278,7 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
                     const val = getDisplayedValue(rec);
                     const isSelected = selectedCell?.year === rec.year && selectedCell?.month === rec.month;
                     const hasNotableEvent = Boolean(rec.notableEvent);
+                    const anomPct = rec.anomalyPercent ?? 0;
 
                     return (
                       <td
@@ -249,7 +292,7 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
                           padding: '7px 4px',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          fontWeight: rec.anomalyPercent > 70 ? 700 : 500,
+                          fontWeight: anomPct > 70 ? 700 : 500,
                           fontSize: '0.74rem',
                           fontFamily: 'var(--font-mono)',
                           position: 'relative',
@@ -258,12 +301,12 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
                             : hasNotableEvent 
                               ? '1px dashed rgba(255, 255, 255, 0.6)' 
                               : '1px solid rgba(255, 255, 255, 0.03)',
-                          transition: 'transform 0.12s ease, box-shadow 0.12s ease'
+                          transition: 'transform 0.1s ease',
                         }}
                       >
                         {val}
                         {hasNotableEvent && (
-                          <span style={{
+                          <div style={{
                             position: 'absolute',
                             top: '2px',
                             right: '2px',
@@ -279,33 +322,25 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
 
                   {/* Annual Sum */}
                   <td style={{
-                    textAlign: 'center',
-                    padding: '6px',
+                    textAlign: 'right',
+                    padding: '6px 10px',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 700,
-                    color: totalAnnualHsfai > 3000 ? '#fbbf24' : 'var(--text-bright)',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    borderRadius: '4px'
+                    color: totalAnnualHsfai > 3000 ? '#fbbf24' : 'var(--text-muted)'
                   }}>
                     {totalAnnualHsfai.toLocaleString()}
                   </td>
 
-                  {/* Historical Event Tag */}
-                  <td style={{
-                    padding: '6px 10px',
-                    fontSize: '0.72rem',
-                    color: notableYearEvent ? '#fde047' : 'var(--text-dim)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '240px'
-                  }}>
+                  {/* Notable Event Tag */}
+                  <td style={{ padding: '6px 10px', fontSize: '0.76rem', color: notableYearEvent ? '#fca5a5' : 'var(--text-dim)' }}>
                     {notableYearEvent ? (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Sparkles size={12} color="#fbbf24" />
+                        <Sparkles size={12} color="#ff5722" />
                         {notableYearEvent}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </td>
                 </tr>
               );
@@ -314,57 +349,35 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
         </table>
       </div>
 
-      {/* Selected Cell Deep Dive Drawer */}
+      {/* Interactive Detail Drawer for Selected Month */}
       {selectedCell && (
         <div className="glass-panel" style={{
-          marginTop: '20px',
           padding: '20px',
-          border: '1px solid var(--accent-cyan)',
-          boxShadow: 'var(--shadow-glow-cyan)'
+          border: '1px solid rgba(6, 182, 212, 0.4)',
+          marginBottom: '24px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: 'rgba(6, 182, 212, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Eye size={20} color="var(--accent-cyan)" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.15rem' }}>
-                  {monthLabels[selectedCell.month - 1]} {selectedCell.year} Detailed Observation Dossier
-                </h3>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Region: {selectedRegion.name} | Era: {selectedCell.year >= 2012 ? 'Concurrent Overlap (MODIS + VIIRS)' : 'MODIS-Only Era (Harmonized Translation)'}
-                </span>
-              </div>
+              <Eye size={20} color="var(--accent-cyan)" />
+              <h3 style={{ fontSize: '1.15rem' }}>
+                Observation Detail: {selectedCell.year} – {monthLabels[selectedCell.month - 1]} ({selectedRegion.name})
+              </h3>
+              {selectedCell.notableEvent && (
+                <span className="badge badge-fire">{selectedCell.notableEvent}</span>
+              )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button
-                onClick={() => onAuditMonth(selectedCell.year, selectedCell.month)}
-                className="btn-accent"
-                style={{ fontSize: '0.8rem', padding: '6px 14px' }}
-              >
-                <ShieldCheck size={15} />
-                Audit Month in Evidence Resolver
-              </button>
-              <button
-                onClick={() => setSelectedCell(null)}
-                className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-              >
-                Close
-              </button>
-            </div>
+            <button
+              onClick={() => onAuditMonth(selectedCell.year, selectedCell.month)}
+              className="btn-primary"
+              style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+            >
+              <ShieldCheck size={14} />
+              Launch Evidence Audit for this Month
+            </button>
           </div>
 
-          {/* Metrics Grid */}
+          {/* 4 Diagnostic Metrics Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
@@ -374,17 +387,19 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
             <div style={{ background: 'var(--bg-surface-elevated)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'block' }}>Harmonized Index (HSFAI)</span>
               <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-                {selectedCell.hsfai.toLocaleString()}
+                {selectedCell.hsfai !== null ? selectedCell.hsfai.toLocaleString() : 'Unobserved'}
               </div>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                95% CI: [{selectedCell.hsfaiLowerCi.toLocaleString()} – {selectedCell.hsfaiUpperCi.toLocaleString()}]
+                {selectedCell.hsfaiLowerCi !== null && selectedCell.hsfaiUpperCi !== null
+                  ? `95% CI: [${selectedCell.hsfaiLowerCi.toLocaleString()} – ${selectedCell.hsfaiUpperCi.toLocaleString()}]`
+                  : 'Prior to instrument commissioning'}
               </span>
             </div>
 
             <div style={{ background: 'var(--bg-surface-elevated)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'block' }}>Historical Monthly Median</span>
               <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-bright)', fontFamily: 'var(--font-mono)' }}>
-                {selectedCell.historicalMedian.toLocaleString()}
+                {selectedCell.historicalMedian !== null ? selectedCell.historicalMedian.toLocaleString() : '—'}
               </div>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                 Multi-year baseline (2000–2025)
@@ -392,17 +407,21 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
             </div>
 
             <div style={{ background: 'var(--bg-surface-elevated)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'block' }}>Anomaly vs Median</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'block' }}>Detected Activity Anomaly vs Median</span>
               <div style={{
                 fontSize: '1.35rem',
                 fontWeight: 800,
-                color: selectedCell.anomalyAbsolute > 0 ? '#ef4444' : '#38bdf8',
+                color: (selectedCell.anomalyAbsolute ?? 0) > 0 ? '#ef4444' : '#38bdf8',
                 fontFamily: 'var(--font-mono)'
               }}>
-                {selectedCell.anomalyAbsolute > 0 ? '+' : ''}{selectedCell.anomalyAbsolute.toLocaleString()} ({selectedCell.anomalyPercent > 0 ? '+' : ''}{selectedCell.anomalyPercent}%)
+                {selectedCell.anomalyAbsolute !== null && selectedCell.anomalyPercent !== null
+                  ? `${selectedCell.anomalyAbsolute > 0 ? '+' : ''}${selectedCell.anomalyAbsolute.toLocaleString()} (${selectedCell.anomalyPercent > 0 ? '+' : ''}${selectedCell.anomalyPercent}%)`
+                  : '—'}
               </div>
-              <span style={{ fontSize: '0.72rem', color: selectedCell.anomalyAbsolute > 0 ? '#fca5a5' : '#93c5fd' }}>
-                {selectedCell.anomalyAbsolute > 0 ? 'Burning significantly above median' : 'Subdued fire activity'}
+              <span style={{ fontSize: '0.72rem', color: (selectedCell.anomalyAbsolute ?? 0) > 0 ? '#fca5a5' : '#93c5fd' }}>
+                {selectedCell.anomalyAbsolute !== null && selectedCell.anomalyAbsolute > 0
+                  ? 'Detected activity significantly above median'
+                  : 'Subdued fire activity'}
               </span>
             </div>
 
@@ -422,23 +441,36 @@ export const BurningCalendar: React.FC<BurningCalendarProps> = ({
             background: 'rgba(0,0,0,0.3)',
             padding: '12px 16px',
             borderRadius: '8px',
-            fontSize: '0.8rem',
-            lineHeight: 1.6
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            fontSize: '0.78rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <Info size={15} color="var(--accent-cyan)" />
-              <strong style={{ color: 'var(--text-bright)' }}>Instrument Contribution & Provenance:</strong>
+            <div>
+              <span style={{ color: 'var(--text-dim)' }}>RAW MODIS CELL-DAYS (A_Mm): </span>
+              <strong style={{ color: '#fbbf24', fontFamily: 'var(--font-mono)' }}>
+                {selectedCell.modisCellDays !== null ? selectedCell.modisCellDays.toLocaleString() : 'Unobserved'}
+              </strong>
             </div>
-            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', color: 'var(--text-muted)' }}>
-              <span>MODIS Cell-Days (A_M,m): <strong style={{ color: '#fbbf24' }}>{selectedCell.modisCellDays}</strong> ({selectedCell.modisRawHotspots} raw detections)</span>
-              <span>VIIRS Cell-Days (A_V,m): <strong style={{ color: '#38bdf8' }}>{selectedCell.year >= 2012 ? selectedCell.viirsCellDays : 'N/A (Pre-launch)'}</strong> ({selectedCell.viirsRawHotspots} raw detections)</span>
-              <span>Harmonization Method: <strong style={{ color: '#34d399' }}>{selectedCell.year >= 2012 ? 'Direct Synchronized Reference' : `Model B2 Translated (α=${selectedRegion.baselineAlphaRatio})`}</strong></span>
+
+            <div>
+              <span style={{ color: 'var(--text-dim)' }}>RAW VIIRS CELL-DAYS (A_Vm): </span>
+              <strong style={{ color: '#34d399', fontFamily: 'var(--font-mono)' }}>
+                {selectedCell.viirsCellDays !== null ? selectedCell.viirsCellDays.toLocaleString() : 'Prior to 2012 Launch'}
+              </strong>
             </div>
-            {selectedCell.notableEvent && (
-              <div style={{ marginTop: '8px', color: '#fde047', fontWeight: 600 }}>
-                Historical Benchmark: {selectedCell.notableEvent}
-              </div>
-            )}
+
+            <div>
+              <span style={{ color: 'var(--text-dim)' }}>CONSTELLATION ERA: </span>
+              <strong style={{ color: 'var(--text-bright)' }}>{selectedCell.sensorCoverage}</strong>
+            </div>
+
+            <div>
+              <span style={{ color: 'var(--text-dim)' }}>CALIBRATION MODEL: </span>
+              <strong style={{ color: 'var(--accent-cyan)' }}>{selectedCell.modelApplied}</strong>
+            </div>
           </div>
         </div>
       )}
