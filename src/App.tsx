@@ -13,6 +13,7 @@ import { EvidenceResolverView } from './components/EvidenceResolverView';
 import { ScientificDossierView } from './components/ScientificDossierView';
 import { ScienceExplainer } from './components/ScienceExplainer';
 import { California2020CaseStudy } from './components/California2020CaseStudy';
+import { CrossRegionTransferLab } from './components/CrossRegionTransferLab';
 import { EvidenceReportModal } from './components/EvidenceReportModal';
 import { Flame } from 'lucide-react';
 import { applyFirmsUpload, parseFirmsCsv } from './science/firmsCsv';
@@ -298,6 +299,8 @@ export const App: React.FC = () => {
         {activeTab === 'case-study' && (
           <California2020CaseStudy onOpenExplorer={() => setActiveTab('explorer')} />
         )}
+
+        {activeTab === 'transfer' && <CrossRegionTransferLab />}
       </main>
 
       {/* Scientific Evidence Report Modal */}

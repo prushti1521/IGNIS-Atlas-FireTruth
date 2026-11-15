@@ -14,7 +14,8 @@ import {
   AlertCircle,
   X,
   Compass,
-  CheckCircle2
+  CheckCircle2,
+  MapPinned
 } from 'lucide-react';
 import type { RegionDefinition } from '../types/fire';
 import { STUDY_REGIONS } from '../data/regions';
@@ -471,6 +472,14 @@ export const Header: React.FC<HeaderProps> = ({
           icon={<MapPin size={15} />}
           label="9. California 2020 Case Study"
           badge="Physics"
+        />
+        <TabButton
+          active={activeTab === 'transfer'}
+          onClick={() => setActiveTab('transfer')}
+          icon={<MapPinned size={15} />}
+          label="10. Cross-Region Transfer Lab"
+          badge="Phase 3"
+          highlight
         />
       </div>
     </header>

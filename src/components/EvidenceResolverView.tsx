@@ -16,6 +16,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import type { DataSourceMode } from '../types/dataSource';
+import { TransferEvidenceCard } from './TransferEvidenceCard';
 
 interface EvidenceResolverViewProps {
   records: MonthlyFireRecord[];
@@ -115,6 +116,7 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
           this artifact contains positive active-fire detections and cell-days, not complete orbital coverage or independent ground truth. Coverage-dependent claims are NOT_EVALUATED.
         </div>
       )}
+      {dataSourceMode === 'observational' && <TransferEvidenceCard />}
       {/* Banner */}
       <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>

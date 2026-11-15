@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { DataSourceMode } from '../types/dataSource';
 import { NASA_OBSERVATIONAL_ARTIFACT } from '../data/nasaObservationalData';
+import { TransferEvidenceCard } from './TransferEvidenceCard';
 
 interface ScientificDossierViewProps {
   selectedRegion: RegionDefinition;
@@ -188,6 +189,7 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
+      {dataSourceMode === 'observational' && <TransferEvidenceCard />}
       {/* Dossier Header */}
       <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>

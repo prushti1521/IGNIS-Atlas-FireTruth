@@ -1,0 +1,1646 @@
+{
+  "artifact_version": "1.0.0",
+  "study_region": "Oregon and Washington, USA",
+  "boundary": {
+    "type": "bounding_box",
+    "west": -124.8,
+    "south": 41.9,
+    "east": -116.4,
+    "north": 49.1,
+    "definition": "-124.8,41.9,-116.4,49.1"
+  },
+  "provenance": {
+    "modis_raw_rows_in_period": 75867,
+    "viirs_raw_rows_in_period": 343346,
+    "modis_manifests": [
+      {
+        "file": "data\\nasa_firms\\oregon_washington\\MODIS_SP_2018-01-01_2022-12-31.manifest.json",
+        "sha256": "87981d5d4b029e5a5250da67476a93a03458675dbd8b5da4f980174dc9e667b2",
+        "source": "MODIS_SP",
+        "area": "-124.8,41.9,-116.4,49.1",
+        "start_date": "2018-01-01",
+        "end_date": "2022-12-31",
+        "complete": false,
+        "request_count": 219,
+        "failed_count": 1
+      },
+      {
+        "file": "data\\nasa_firms\\oregon_washington\\MODIS_SP_2020-12-26_2022-12-31.manifest.json",
+        "sha256": "0ae9d64ec3681167785b8594021aaf601b8c3ab5104d6d30b5acbf73c7f3c5ec",
+        "source": "MODIS_SP",
+        "area": "-124.8,41.9,-116.4,49.1",
+        "start_date": "2020-12-26",
+        "end_date": "2022-12-31",
+        "complete": true,
+        "request_count": 148,
+        "failed_count": 0
+      }
+    ],
+    "viirs_manifests": [
+      {
+        "file": "data\\nasa_firms\\oregon_washington\\VIIRS_SNPP_SP_2018-01-01_2022-12-31.manifest.json",
+        "sha256": "aff69b769ebc3f6f566d98a905160f10365b365f8378b8701d2cf3b93c3f65ec",
+        "source": "VIIRS_SNPP_SP",
+        "area": "-124.8,41.9,-116.4,49.1",
+        "start_date": "2018-01-01",
+        "end_date": "2022-12-31",
+        "complete": true,
+        "request_count": 366,
+        "failed_count": 0
+      }
+    ],
+    "confidence_policy": "nominal_high",
+    "grid": "25 km authalic sinusoidal equal-area, lon_0=0"
+  },
+  "source_products": {
+    "modis": "MODIS_SP",
+    "viirs": "VIIRS_SNPP_SP",
+    "reference_role": "comparison sensor; not ground truth"
+  },
+  "evaluation": {
+    "training_period": [
+      "2018-01",
+      "2020-06"
+    ],
+    "holdout_period": [
+      "2020-07",
+      "2022-12"
+    ],
+    "reference_sensor": "VIIRS",
+    "complete_overlap_months": 60,
+    "training_months": 30,
+    "training_rows_used_for_local_fit": 30,
+    "holdout_rows_excluded_from_local_fit": 30,
+    "fit_rule": "local parameters use training months only; holdout is evaluation-only"
+  },
+  "frozen_california_models": {
+    "source_artifact": "src\\data\\nasaObservationalData.json",
+    "source_sha256": "cc94738b343369d2bcca5bd523999875adcece8cdd449e6585edd4bf11d293a5",
+    "b1_alpha": 3.281395516950078,
+    "b2_seasonal_factors": {
+      "1": 3.74,
+      "2": 3.005,
+      "3": 3.172,
+      "4": 3.787,
+      "5": 4.335,
+      "6": 4.026,
+      "7": 3.169,
+      "8": 2.732,
+      "9": 3.541,
+      "10": 3.43,
+      "11": 3.329,
+      "12": 4.319
+    }
+  },
+  "local_training_models": {
+    "b1_alpha": 2.300688364289182,
+    "b2_seasonal_factors": {
+      "1": 5.029982786119165,
+      "2": 2.8824303090009398,
+      "3": 2.5471251332265377,
+      "4": 2.454543043665104,
+      "5": 2.6421823018404735,
+      "6": 3.9080225156737485,
+      "7": 2.189393823657067,
+      "8": 1.9818105754347366,
+      "9": 2.1280544094612486,
+      "10": 2.2790250750897525,
+      "11": 2.7413182307089916,
+      "12": 3.198446317094335
+    }
+  },
+  "monthly_observations": [
+    {
+      "year": 2018,
+      "month": 1,
+      "period": "2018-01",
+      "modis_cell_days": 19.0,
+      "viirs_cell_days": 125.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 2,
+      "period": "2018-02",
+      "modis_cell_days": 48.0,
+      "viirs_cell_days": 148.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 3,
+      "period": "2018-03",
+      "modis_cell_days": 99.0,
+      "viirs_cell_days": 231.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 4,
+      "period": "2018-04",
+      "modis_cell_days": 139.0,
+      "viirs_cell_days": 339.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 5,
+      "period": "2018-05",
+      "modis_cell_days": 147.0,
+      "viirs_cell_days": 449.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 6,
+      "period": "2018-06",
+      "modis_cell_days": 56.0,
+      "viirs_cell_days": 264.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 7,
+      "period": "2018-07",
+      "modis_cell_days": 328.0,
+      "viirs_cell_days": 677.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 8,
+      "period": "2018-08",
+      "modis_cell_days": 658.0,
+      "viirs_cell_days": 1157.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 9,
+      "period": "2018-09",
+      "modis_cell_days": 398.0,
+      "viirs_cell_days": 800.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 10,
+      "period": "2018-10",
+      "modis_cell_days": 411.0,
+      "viirs_cell_days": 925.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 11,
+      "period": "2018-11",
+      "modis_cell_days": 410.0,
+      "viirs_cell_days": 1210.0,
+      "training_observation": true
+    },
+    {
+      "year": 2018,
+      "month": 12,
+      "period": "2018-12",
+      "modis_cell_days": 130.0,
+      "viirs_cell_days": 522.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 1,
+      "period": "2019-01",
+      "modis_cell_days": 27.0,
+      "viirs_cell_days": 166.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 2,
+      "period": "2019-02",
+      "modis_cell_days": 3.0,
+      "viirs_cell_days": 40.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 3,
+      "period": "2019-03",
+      "modis_cell_days": 56.0,
+      "viirs_cell_days": 222.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 4,
+      "period": "2019-04",
+      "modis_cell_days": 168.0,
+      "viirs_cell_days": 347.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 5,
+      "period": "2019-05",
+      "modis_cell_days": 176.0,
+      "viirs_cell_days": 453.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 6,
+      "period": "2019-06",
+      "modis_cell_days": 55.0,
+      "viirs_cell_days": 249.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 7,
+      "period": "2019-07",
+      "modis_cell_days": 86.0,
+      "viirs_cell_days": 265.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 8,
+      "period": "2019-08",
+      "modis_cell_days": 156.0,
+      "viirs_cell_days": 426.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 9,
+      "period": "2019-09",
+      "modis_cell_days": 215.0,
+      "viirs_cell_days": 456.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 10,
+      "period": "2019-10",
+      "modis_cell_days": 557.0,
+      "viirs_cell_days": 1268.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 11,
+      "period": "2019-11",
+      "modis_cell_days": 273.0,
+      "viirs_cell_days": 830.0,
+      "training_observation": true
+    },
+    {
+      "year": 2019,
+      "month": 12,
+      "period": "2019-12",
+      "modis_cell_days": 168.0,
+      "viirs_cell_days": 585.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 1,
+      "period": "2020-01",
+      "modis_cell_days": 13.0,
+      "viirs_cell_days": 102.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 2,
+      "period": "2020-02",
+      "modis_cell_days": 93.0,
+      "viirs_cell_days": 299.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 3,
+      "period": "2020-03",
+      "modis_cell_days": 156.0,
+      "viirs_cell_days": 414.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 4,
+      "period": "2020-04",
+      "modis_cell_days": 101.0,
+      "viirs_cell_days": 407.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 5,
+      "period": "2020-05",
+      "modis_cell_days": 39.0,
+      "viirs_cell_days": 184.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 6,
+      "period": "2020-06",
+      "modis_cell_days": 20.0,
+      "viirs_cell_days": 142.0,
+      "training_observation": true
+    },
+    {
+      "year": 2020,
+      "month": 7,
+      "period": "2020-07",
+      "modis_cell_days": 72.0,
+      "viirs_cell_days": 300.0,
+      "training_observation": false
+    },
+    {
+      "year": 2020,
+      "month": 8,
+      "period": "2020-08",
+      "modis_cell_days": 209.0,
+      "viirs_cell_days": 544.0,
+      "training_observation": false
+    },
+    {
+      "year": 2020,
+      "month": 9,
+      "period": "2020-09",
+      "modis_cell_days": 628.0,
+      "viirs_cell_days": 1000.0,
+      "training_observation": false
+    },
+    {
+      "year": 2020,
+      "month": 10,
+      "period": "2020-10",
+      "modis_cell_days": 368.0,
+      "viirs_cell_days": 800.0,
+      "training_observation": false
+    },
+    {
+      "year": 2020,
+      "month": 11,
+      "period": "2020-11",
+      "modis_cell_days": 365.0,
+      "viirs_cell_days": 1135.0,
+      "training_observation": false
+    },
+    {
+      "year": 2020,
+      "month": 12,
+      "period": "2020-12",
+      "modis_cell_days": 189.0,
+      "viirs_cell_days": 609.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 1,
+      "period": "2021-01",
+      "modis_cell_days": 21.0,
+      "viirs_cell_days": 142.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 2,
+      "period": "2021-02",
+      "modis_cell_days": 33.0,
+      "viirs_cell_days": 140.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 3,
+      "period": "2021-03",
+      "modis_cell_days": 160.0,
+      "viirs_cell_days": 388.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 4,
+      "period": "2021-04",
+      "modis_cell_days": 257.0,
+      "viirs_cell_days": 658.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 5,
+      "period": "2021-05",
+      "modis_cell_days": 110.0,
+      "viirs_cell_days": 349.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 6,
+      "period": "2021-06",
+      "modis_cell_days": 60.0,
+      "viirs_cell_days": 275.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 7,
+      "period": "2021-07",
+      "modis_cell_days": 532.0,
+      "viirs_cell_days": 857.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 8,
+      "period": "2021-08",
+      "modis_cell_days": 672.0,
+      "viirs_cell_days": 1168.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 9,
+      "period": "2021-09",
+      "modis_cell_days": 316.0,
+      "viirs_cell_days": 670.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 10,
+      "period": "2021-10",
+      "modis_cell_days": 330.0,
+      "viirs_cell_days": 851.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 11,
+      "period": "2021-11",
+      "modis_cell_days": 322.0,
+      "viirs_cell_days": 817.0,
+      "training_observation": false
+    },
+    {
+      "year": 2021,
+      "month": 12,
+      "period": "2021-12",
+      "modis_cell_days": 69.0,
+      "viirs_cell_days": 294.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 1,
+      "period": "2022-01",
+      "modis_cell_days": 29.0,
+      "viirs_cell_days": 138.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 2,
+      "period": "2022-02",
+      "modis_cell_days": 61.0,
+      "viirs_cell_days": 242.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 3,
+      "period": "2022-03",
+      "modis_cell_days": 80.0,
+      "viirs_cell_days": 256.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 4,
+      "period": "2022-04",
+      "modis_cell_days": 43.0,
+      "viirs_cell_days": 265.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 5,
+      "period": "2022-05",
+      "modis_cell_days": 44.0,
+      "viirs_cell_days": 170.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 6,
+      "period": "2022-06",
+      "modis_cell_days": 21.0,
+      "viirs_cell_days": 151.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 7,
+      "period": "2022-07",
+      "modis_cell_days": 45.0,
+      "viirs_cell_days": 185.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 8,
+      "period": "2022-08",
+      "modis_cell_days": 250.0,
+      "viirs_cell_days": 423.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 9,
+      "period": "2022-09",
+      "modis_cell_days": 573.0,
+      "viirs_cell_days": 1022.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 10,
+      "period": "2022-10",
+      "modis_cell_days": 537.0,
+      "viirs_cell_days": 1272.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 11,
+      "period": "2022-11",
+      "modis_cell_days": 357.0,
+      "viirs_cell_days": 1291.0,
+      "training_observation": false
+    },
+    {
+      "year": 2022,
+      "month": 12,
+      "period": "2022-12",
+      "modis_cell_days": 69.0,
+      "viirs_cell_days": 349.0,
+      "training_observation": false
+    }
+  ],
+  "zero_shot_transfer": {
+    "track": "California -> Pacific Northwest: Zero-Shot Transfer",
+    "status": "EVALUATED",
+    "holdout_months": 30,
+    "models": {
+      "b0": {
+        "mae": 331.3,
+        "rmse": 389.2118103723644,
+        "bias": -331.3,
+        "sample_size_months": 30
+      },
+      "b1": {
+        "mae": 248.15537671032294,
+        "rmse": 395.50177372843496,
+        "bias": 187.48934055444778,
+        "sample_size_months": 30
+      },
+      "b2": {
+        "mae": 252.36090000000004,
+        "rmse": 400.9546531338675,
+        "bias": 208.05516666666668,
+        "sample_size_months": 30
+      }
+    },
+    "monthly_residuals": [
+      {
+        "year": 2020,
+        "month": 7,
+        "modis_cell_days": 72.0,
+        "viirs_cell_days": 300.0,
+        "b0_prediction": 72.0,
+        "b1_prediction": 236.26047722040562,
+        "b2_prediction": 228.168,
+        "b0_error": -228.0,
+        "b1_error": -63.73952277959438,
+        "b2_error": -71.832,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 8,
+        "modis_cell_days": 209.0,
+        "viirs_cell_days": 544.0,
+        "b0_prediction": 209.0,
+        "b1_prediction": 685.8116630425664,
+        "b2_prediction": 570.988,
+        "b0_error": -335.0,
+        "b1_error": 141.81166304256635,
+        "b2_error": 26.988000000000056,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 9,
+        "modis_cell_days": 628.0,
+        "viirs_cell_days": 1000.0,
+        "b0_prediction": 628.0,
+        "b1_prediction": 2060.716384644649,
+        "b2_prediction": 2223.748,
+        "b0_error": -372.0,
+        "b1_error": 1060.7163846446492,
+        "b2_error": 1223.748,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 10,
+        "modis_cell_days": 368.0,
+        "viirs_cell_days": 800.0,
+        "b0_prediction": 368.0,
+        "b1_prediction": 1207.5535502376288,
+        "b2_prediction": 1262.24,
+        "b0_error": -432.0,
+        "b1_error": 407.55355023762877,
+        "b2_error": 462.24,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 11,
+        "modis_cell_days": 365.0,
+        "viirs_cell_days": 1135.0,
+        "b0_prediction": 365.0,
+        "b1_prediction": 1197.7093636867785,
+        "b2_prediction": 1215.085,
+        "b0_error": -770.0,
+        "b1_error": 62.70936368677849,
+        "b2_error": 80.08500000000004,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 12,
+        "modis_cell_days": 189.0,
+        "viirs_cell_days": 609.0,
+        "b0_prediction": 189.0,
+        "b1_prediction": 620.1837527035648,
+        "b2_prediction": 816.2909999999999,
+        "b0_error": -420.0,
+        "b1_error": 11.183752703564778,
+        "b2_error": 207.29099999999994,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 1,
+        "modis_cell_days": 21.0,
+        "viirs_cell_days": 142.0,
+        "b0_prediction": 21.0,
+        "b1_prediction": 68.90930585595164,
+        "b2_prediction": 78.54,
+        "b0_error": -121.0,
+        "b1_error": -73.09069414404836,
+        "b2_error": -63.459999999999994,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 2,
+        "modis_cell_days": 33.0,
+        "viirs_cell_days": 140.0,
+        "b0_prediction": 33.0,
+        "b1_prediction": 108.28605205935258,
+        "b2_prediction": 99.16499999999999,
+        "b0_error": -107.0,
+        "b1_error": -31.713947940647415,
+        "b2_error": -40.83500000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 3,
+        "modis_cell_days": 160.0,
+        "viirs_cell_days": 388.0,
+        "b0_prediction": 160.0,
+        "b1_prediction": 525.0232827120125,
+        "b2_prediction": 507.52000000000004,
+        "b0_error": -228.0,
+        "b1_error": 137.02328271201247,
+        "b2_error": 119.52000000000004,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 4,
+        "modis_cell_days": 257.0,
+        "viirs_cell_days": 658.0,
+        "b0_prediction": 257.0,
+        "b1_prediction": 843.3186478561701,
+        "b2_prediction": 973.259,
+        "b0_error": -401.0,
+        "b1_error": 185.31864785617006,
+        "b2_error": 315.259,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 5,
+        "modis_cell_days": 110.0,
+        "viirs_cell_days": 349.0,
+        "b0_prediction": 110.0,
+        "b1_prediction": 360.9535068645086,
+        "b2_prediction": 476.85,
+        "b0_error": -239.0,
+        "b1_error": 11.953506864508597,
+        "b2_error": 127.85000000000002,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 6,
+        "modis_cell_days": 60.0,
+        "viirs_cell_days": 275.0,
+        "b0_prediction": 60.0,
+        "b1_prediction": 196.8837310170047,
+        "b2_prediction": 241.56,
+        "b0_error": -215.0,
+        "b1_error": -78.11626898299531,
+        "b2_error": -33.44,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 7,
+        "modis_cell_days": 532.0,
+        "viirs_cell_days": 857.0,
+        "b0_prediction": 532.0,
+        "b1_prediction": 1745.7024150174416,
+        "b2_prediction": 1685.9080000000001,
+        "b0_error": -325.0,
+        "b1_error": 888.7024150174416,
+        "b2_error": 828.9080000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 8,
+        "modis_cell_days": 672.0,
+        "viirs_cell_days": 1168.0,
+        "b0_prediction": 672.0,
+        "b1_prediction": 2205.0977873904526,
+        "b2_prediction": 1835.9040000000002,
+        "b0_error": -496.0,
+        "b1_error": 1037.0977873904526,
+        "b2_error": 667.9040000000002,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 9,
+        "modis_cell_days": 316.0,
+        "viirs_cell_days": 670.0,
+        "b0_prediction": 316.0,
+        "b1_prediction": 1036.9209833562247,
+        "b2_prediction": 1118.956,
+        "b0_error": -354.0,
+        "b1_error": 366.9209833562247,
+        "b2_error": 448.9559999999999,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 10,
+        "modis_cell_days": 330.0,
+        "viirs_cell_days": 851.0,
+        "b0_prediction": 330.0,
+        "b1_prediction": 1082.8605205935257,
+        "b2_prediction": 1131.9,
+        "b0_error": -521.0,
+        "b1_error": 231.86052059352573,
+        "b2_error": 280.9000000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 11,
+        "modis_cell_days": 322.0,
+        "viirs_cell_days": 817.0,
+        "b0_prediction": 322.0,
+        "b1_prediction": 1056.609356457925,
+        "b2_prediction": 1071.938,
+        "b0_error": -495.0,
+        "b1_error": 239.60935645792506,
+        "b2_error": 254.9380000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 12,
+        "modis_cell_days": 69.0,
+        "viirs_cell_days": 294.0,
+        "b0_prediction": 69.0,
+        "b1_prediction": 226.4162906695554,
+        "b2_prediction": 298.011,
+        "b0_error": -225.0,
+        "b1_error": -67.5837093304446,
+        "b2_error": 4.011000000000024,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 1,
+        "modis_cell_days": 29.0,
+        "viirs_cell_days": 138.0,
+        "b0_prediction": 29.0,
+        "b1_prediction": 95.16046999155226,
+        "b2_prediction": 108.46000000000001,
+        "b0_error": -109.0,
+        "b1_error": -42.83953000844774,
+        "b2_error": -29.539999999999992,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 2,
+        "modis_cell_days": 61.0,
+        "viirs_cell_days": 242.0,
+        "b0_prediction": 61.0,
+        "b1_prediction": 200.16512653395478,
+        "b2_prediction": 183.305,
+        "b0_error": -181.0,
+        "b1_error": -41.834873466045224,
+        "b2_error": -58.69499999999999,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 3,
+        "modis_cell_days": 80.0,
+        "viirs_cell_days": 256.0,
+        "b0_prediction": 80.0,
+        "b1_prediction": 262.51164135600624,
+        "b2_prediction": 253.76000000000002,
+        "b0_error": -176.0,
+        "b1_error": 6.511641356006237,
+        "b2_error": -2.2399999999999807,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 4,
+        "modis_cell_days": 43.0,
+        "viirs_cell_days": 265.0,
+        "b0_prediction": 43.0,
+        "b1_prediction": 141.10000722885337,
+        "b2_prediction": 162.841,
+        "b0_error": -222.0,
+        "b1_error": -123.89999277114663,
+        "b2_error": -102.15899999999999,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 5,
+        "modis_cell_days": 44.0,
+        "viirs_cell_days": 170.0,
+        "b0_prediction": 44.0,
+        "b1_prediction": 144.38140274580343,
+        "b2_prediction": 190.74,
+        "b0_error": -126.0,
+        "b1_error": -25.618597254196573,
+        "b2_error": 20.74000000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 6,
+        "modis_cell_days": 21.0,
+        "viirs_cell_days": 151.0,
+        "b0_prediction": 21.0,
+        "b1_prediction": 68.90930585595164,
+        "b2_prediction": 84.54599999999999,
+        "b0_error": -130.0,
+        "b1_error": -82.09069414404836,
+        "b2_error": -66.45400000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 7,
+        "modis_cell_days": 45.0,
+        "viirs_cell_days": 185.0,
+        "b0_prediction": 45.0,
+        "b1_prediction": 147.6627982627535,
+        "b2_prediction": 142.605,
+        "b0_error": -140.0,
+        "b1_error": -37.33720173724649,
+        "b2_error": -42.39500000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 8,
+        "modis_cell_days": 250.0,
+        "viirs_cell_days": 423.0,
+        "b0_prediction": 250.0,
+        "b1_prediction": 820.3488792375196,
+        "b2_prediction": 683.0,
+        "b0_error": -173.0,
+        "b1_error": 397.34887923751955,
+        "b2_error": 260.0,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 9,
+        "modis_cell_days": 573.0,
+        "viirs_cell_days": 1022.0,
+        "b0_prediction": 573.0,
+        "b1_prediction": 1880.2396312123947,
+        "b2_prediction": 2028.993,
+        "b0_error": -449.0,
+        "b1_error": 858.2396312123947,
+        "b2_error": 1006.9929999999999,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 10,
+        "modis_cell_days": 537.0,
+        "viirs_cell_days": 1272.0,
+        "b0_prediction": 537.0,
+        "b1_prediction": 1762.109392602192,
+        "b2_prediction": 1841.91,
+        "b0_error": -735.0,
+        "b1_error": 490.109392602192,
+        "b2_error": 569.9100000000001,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 11,
+        "modis_cell_days": 357.0,
+        "viirs_cell_days": 1291.0,
+        "b0_prediction": 357.0,
+        "b1_prediction": 1171.4581995511778,
+        "b2_prediction": 1188.453,
+        "b0_error": -934.0,
+        "b1_error": -119.54180044882219,
+        "b2_error": -102.54700000000003,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 12,
+        "modis_cell_days": 69.0,
+        "viirs_cell_days": 349.0,
+        "b0_prediction": 69.0,
+        "b1_prediction": 226.4162906695554,
+        "b2_prediction": 298.011,
+        "b0_error": -280.0,
+        "b1_error": -122.5837093304446,
+        "b2_error": -50.988999999999976,
+        "training_observation": false
+      }
+    ]
+  },
+  "local_calibration_benchmark": {
+    "track": "Pacific Northwest: Local Calibration Benchmark",
+    "status": "EVALUATED",
+    "holdout_months": 30,
+    "models": {
+      "b0": {
+        "mae": 331.3,
+        "rmse": 389.2118103723644,
+        "bias": -331.3,
+        "sample_size_months": 30
+      },
+      "b1": {
+        "mae": 151.65669585141194,
+        "rmse": 194.74654873370523,
+        "bias": -35.52346596064002,
+        "sample_size_months": 30
+      },
+      "b2": {
+        "mae": 99.2829259453528,
+        "rmse": 132.7487574158084,
+        "bias": -18.480217683744335,
+        "sample_size_months": 30
+      }
+    },
+    "monthly_residuals": [
+      {
+        "year": 2020,
+        "month": 7,
+        "modis_cell_days": 72.0,
+        "viirs_cell_days": 300.0,
+        "b0_prediction": 72.0,
+        "b1_prediction": 165.6495622288211,
+        "b2_prediction": 157.63635530330882,
+        "b0_error": -228.0,
+        "b1_error": -134.3504377711789,
+        "b2_error": -142.36364469669118,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 8,
+        "modis_cell_days": 209.0,
+        "viirs_cell_days": 544.0,
+        "b0_prediction": 209.0,
+        "b1_prediction": 480.843868136439,
+        "b2_prediction": 414.19841026585993,
+        "b0_error": -335.0,
+        "b1_error": -63.15613186356097,
+        "b2_error": -129.80158973414007,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 9,
+        "modis_cell_days": 628.0,
+        "viirs_cell_days": 1000.0,
+        "b0_prediction": 628.0,
+        "b1_prediction": 1444.8322927736062,
+        "b2_prediction": 1336.418169141664,
+        "b0_error": -372.0,
+        "b1_error": 444.83229277360624,
+        "b2_error": 336.41816914166407,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 10,
+        "modis_cell_days": 368.0,
+        "viirs_cell_days": 800.0,
+        "b0_prediction": 368.0,
+        "b1_prediction": 846.653318058419,
+        "b2_prediction": 838.6812276330289,
+        "b0_error": -432.0,
+        "b1_error": 46.65331805841902,
+        "b2_error": 38.681227633028925,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 11,
+        "modis_cell_days": 365.0,
+        "viirs_cell_days": 1135.0,
+        "b0_prediction": 365.0,
+        "b1_prediction": 839.7512529655514,
+        "b2_prediction": 1000.581154208782,
+        "b0_error": -770.0,
+        "b1_error": -295.24874703444857,
+        "b2_error": -134.41884579121802,
+        "training_observation": false
+      },
+      {
+        "year": 2020,
+        "month": 12,
+        "modis_cell_days": 189.0,
+        "viirs_cell_days": 609.0,
+        "b0_prediction": 189.0,
+        "b1_prediction": 434.8301008506554,
+        "b2_prediction": 604.5063539308293,
+        "b0_error": -420.0,
+        "b1_error": -174.1698991493446,
+        "b2_error": -4.4936460691707225,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 1,
+        "modis_cell_days": 21.0,
+        "viirs_cell_days": 142.0,
+        "b0_prediction": 21.0,
+        "b1_prediction": 48.31445565007282,
+        "b2_prediction": 105.62963850850247,
+        "b0_error": -121.0,
+        "b1_error": -93.68554434992717,
+        "b2_error": -36.37036149149753,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 2,
+        "modis_cell_days": 33.0,
+        "viirs_cell_days": 140.0,
+        "b0_prediction": 33.0,
+        "b1_prediction": 75.92271602154301,
+        "b2_prediction": 95.12020019703101,
+        "b0_error": -107.0,
+        "b1_error": -64.07728397845699,
+        "b2_error": -44.87979980296899,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 3,
+        "modis_cell_days": 160.0,
+        "viirs_cell_days": 388.0,
+        "b0_prediction": 160.0,
+        "b1_prediction": 368.11013828626915,
+        "b2_prediction": 407.540021316246,
+        "b0_error": -228.0,
+        "b1_error": -19.889861713730852,
+        "b2_error": 19.540021316245998,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 4,
+        "modis_cell_days": 257.0,
+        "viirs_cell_days": 658.0,
+        "b0_prediction": 257.0,
+        "b1_prediction": 591.2769096223197,
+        "b2_prediction": 630.8175622219318,
+        "b0_error": -401.0,
+        "b1_error": -66.72309037768025,
+        "b2_error": -27.18243777806822,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 5,
+        "modis_cell_days": 110.0,
+        "viirs_cell_days": 349.0,
+        "b0_prediction": 110.0,
+        "b1_prediction": 253.07572007181003,
+        "b2_prediction": 290.64005320245207,
+        "b0_error": -239.0,
+        "b1_error": -95.92427992818997,
+        "b2_error": -58.359946797547934,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 6,
+        "modis_cell_days": 60.0,
+        "viirs_cell_days": 275.0,
+        "b0_prediction": 60.0,
+        "b1_prediction": 138.04130185735093,
+        "b2_prediction": 234.4813509404249,
+        "b0_error": -215.0,
+        "b1_error": -136.95869814264907,
+        "b2_error": -40.5186490595751,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 7,
+        "modis_cell_days": 532.0,
+        "viirs_cell_days": 857.0,
+        "b0_prediction": 532.0,
+        "b1_prediction": 1223.9662098018448,
+        "b2_prediction": 1164.7575141855596,
+        "b0_error": -325.0,
+        "b1_error": 366.9662098018448,
+        "b2_error": 307.75751418555956,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 8,
+        "modis_cell_days": 672.0,
+        "viirs_cell_days": 1168.0,
+        "b0_prediction": 672.0,
+        "b1_prediction": 1546.0625808023303,
+        "b2_prediction": 1331.776706692143,
+        "b0_error": -496.0,
+        "b1_error": 378.06258080233033,
+        "b2_error": 163.77670669214308,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 9,
+        "modis_cell_days": 316.0,
+        "viirs_cell_days": 670.0,
+        "b0_prediction": 316.0,
+        "b1_prediction": 727.0175231153816,
+        "b2_prediction": 672.4651933897545,
+        "b0_error": -354.0,
+        "b1_error": 57.01752311538155,
+        "b2_error": 2.4651933897545177,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 10,
+        "modis_cell_days": 330.0,
+        "viirs_cell_days": 851.0,
+        "b0_prediction": 330.0,
+        "b1_prediction": 759.2271602154301,
+        "b2_prediction": 752.0782747796184,
+        "b0_error": -521.0,
+        "b1_error": -91.7728397845699,
+        "b2_error": -98.92172522038163,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 11,
+        "modis_cell_days": 322.0,
+        "viirs_cell_days": 817.0,
+        "b0_prediction": 322.0,
+        "b1_prediction": 740.8216533011166,
+        "b2_prediction": 882.7044702882953,
+        "b0_error": -495.0,
+        "b1_error": -76.17834669888339,
+        "b2_error": 65.70447028829528,
+        "training_observation": false
+      },
+      {
+        "year": 2021,
+        "month": 12,
+        "modis_cell_days": 69.0,
+        "viirs_cell_days": 294.0,
+        "b0_prediction": 69.0,
+        "b1_prediction": 158.74749713595355,
+        "b2_prediction": 220.6927958795091,
+        "b0_error": -225.0,
+        "b1_error": -135.25250286404645,
+        "b2_error": -73.3072041204909,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 1,
+        "modis_cell_days": 29.0,
+        "viirs_cell_days": 138.0,
+        "b0_prediction": 29.0,
+        "b1_prediction": 66.71996256438628,
+        "b2_prediction": 145.86950079745577,
+        "b0_error": -109.0,
+        "b1_error": -71.28003743561372,
+        "b2_error": 7.869500797455771,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 2,
+        "modis_cell_days": 61.0,
+        "viirs_cell_days": 242.0,
+        "b0_prediction": 61.0,
+        "b1_prediction": 140.3419902216401,
+        "b2_prediction": 175.82824884905733,
+        "b0_error": -181.0,
+        "b1_error": -101.65800977835991,
+        "b2_error": -66.17175115094267,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 3,
+        "modis_cell_days": 80.0,
+        "viirs_cell_days": 256.0,
+        "b0_prediction": 80.0,
+        "b1_prediction": 184.05506914313457,
+        "b2_prediction": 203.770010658123,
+        "b0_error": -176.0,
+        "b1_error": -71.94493085686543,
+        "b2_error": -52.229989341877,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 4,
+        "modis_cell_days": 43.0,
+        "viirs_cell_days": 265.0,
+        "b0_prediction": 43.0,
+        "b1_prediction": 98.92959966443483,
+        "b2_prediction": 105.54535087759947,
+        "b0_error": -222.0,
+        "b1_error": -166.07040033556518,
+        "b2_error": -159.45464912240053,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 5,
+        "modis_cell_days": 44.0,
+        "viirs_cell_days": 170.0,
+        "b0_prediction": 44.0,
+        "b1_prediction": 101.230288028724,
+        "b2_prediction": 116.25602128098083,
+        "b0_error": -126.0,
+        "b1_error": -68.769711971276,
+        "b2_error": -53.74397871901917,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 6,
+        "modis_cell_days": 21.0,
+        "viirs_cell_days": 151.0,
+        "b0_prediction": 21.0,
+        "b1_prediction": 48.31445565007282,
+        "b2_prediction": 82.06847282914872,
+        "b0_error": -130.0,
+        "b1_error": -102.68554434992717,
+        "b2_error": -68.93152717085128,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 7,
+        "modis_cell_days": 45.0,
+        "viirs_cell_days": 185.0,
+        "b0_prediction": 45.0,
+        "b1_prediction": 103.53097639301319,
+        "b2_prediction": 98.52272206456801,
+        "b0_error": -140.0,
+        "b1_error": -81.46902360698681,
+        "b2_error": -86.47727793543199,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 8,
+        "modis_cell_days": 250.0,
+        "viirs_cell_days": 423.0,
+        "b0_prediction": 250.0,
+        "b1_prediction": 575.1720910722955,
+        "b2_prediction": 495.45264385868416,
+        "b0_error": -173.0,
+        "b1_error": 152.17209107229553,
+        "b2_error": 72.45264385868416,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 9,
+        "modis_cell_days": 573.0,
+        "viirs_cell_days": 1022.0,
+        "b0_prediction": 573.0,
+        "b1_prediction": 1318.2944327377013,
+        "b2_prediction": 1219.3751766212954,
+        "b0_error": -449.0,
+        "b1_error": 296.2944327377013,
+        "b2_error": 197.3751766212954,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 10,
+        "modis_cell_days": 537.0,
+        "viirs_cell_days": 1272.0,
+        "b0_prediction": 537.0,
+        "b1_prediction": 1235.4696516232907,
+        "b2_prediction": 1223.836465323197,
+        "b0_error": -735.0,
+        "b1_error": -36.5303483767093,
+        "b2_error": -48.16353467680301,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 11,
+        "modis_cell_days": 357.0,
+        "viirs_cell_days": 1291.0,
+        "b0_prediction": 357.0,
+        "b1_prediction": 821.3457460512379,
+        "b2_prediction": 978.65060836311,
+        "b0_error": -934.0,
+        "b1_error": -469.65425394876206,
+        "b2_error": -312.34939163689,
+        "training_observation": false
+      },
+      {
+        "year": 2022,
+        "month": 12,
+        "modis_cell_days": 69.0,
+        "viirs_cell_days": 349.0,
+        "b0_prediction": 69.0,
+        "b1_prediction": 158.74749713595355,
+        "b2_prediction": 220.6927958795091,
+        "b0_error": -280.0,
+        "b1_error": -190.25250286404645,
+        "b2_error": -128.3072041204909,
+        "training_observation": false
+      }
+    ]
+  },
+  "failure_analysis": {
+    "zero_shot_metrics_recomputed": {
+      "b0": {
+        "mae": 331.3,
+        "rmse": 389.2118103723644,
+        "bias": -331.3,
+        "sample_size_months": 30
+      },
+      "b1": {
+        "mae": 248.15537671032294,
+        "rmse": 395.50177372843496,
+        "bias": 187.48934055444778,
+        "sample_size_months": 30
+      },
+      "b2": {
+        "mae": 252.36090000000004,
+        "rmse": 400.9546531338675,
+        "bias": 208.05516666666668,
+        "sample_size_months": 30
+      }
+    },
+    "largest_absolute_error_months": [
+      {
+        "year": 2020,
+        "month": 9,
+        "period": "2020-09",
+        "zero_shot_b0_error": -372.0,
+        "zero_shot_b1_error": 1060.7163846446492,
+        "zero_shot_b2_error": 1223.748,
+        "b1_worse_than_b0": true,
+        "b2_worse_than_b0": true,
+        "reason": "Observed residual magnitude; no causal attribution inferred."
+      },
+      {
+        "year": 2022,
+        "month": 9,
+        "period": "2022-09",
+        "zero_shot_b0_error": -449.0,
+        "zero_shot_b1_error": 858.2396312123947,
+        "zero_shot_b2_error": 1006.9929999999999,
+        "b1_worse_than_b0": true,
+        "b2_worse_than_b0": true,
+        "reason": "Observed residual magnitude; no causal attribution inferred."
+      },
+      {
+        "year": 2021,
+        "month": 7,
+        "period": "2021-07",
+        "zero_shot_b0_error": -325.0,
+        "zero_shot_b1_error": 888.7024150174416,
+        "zero_shot_b2_error": 828.9080000000001,
+        "b1_worse_than_b0": true,
+        "b2_worse_than_b0": true,
+        "reason": "Observed residual magnitude; no causal attribution inferred."
+      },
+      {
+        "year": 2021,
+        "month": 8,
+        "period": "2021-08",
+        "zero_shot_b0_error": -496.0,
+        "zero_shot_b1_error": 1037.0977873904526,
+        "zero_shot_b2_error": 667.9040000000002,
+        "b1_worse_than_b0": true,
+        "b2_worse_than_b0": true,
+        "reason": "Observed residual magnitude; no causal attribution inferred."
+      },
+      {
+        "year": 2022,
+        "month": 10,
+        "period": "2022-10",
+        "zero_shot_b0_error": -735.0,
+        "zero_shot_b1_error": 490.109392602192,
+        "zero_shot_b2_error": 569.9100000000001,
+        "b1_worse_than_b0": false,
+        "b2_worse_than_b0": false,
+        "reason": "Observed residual magnitude; no causal attribution inferred."
+      }
+    ],
+    "seasonal_residuals": [
+      {
+        "month": 1,
+        "zero_shot_b1_bias": -57.96511207624805,
+        "zero_shot_b2_bias": -46.49999999999999,
+        "local_b2_bias": -14.250430347020881,
+        "sample_size": 2
+      },
+      {
+        "month": 2,
+        "zero_shot_b1_bias": -36.77441070334632,
+        "zero_shot_b2_bias": -49.765,
+        "local_b2_bias": -55.52577547695583,
+        "sample_size": 2
+      },
+      {
+        "month": 3,
+        "zero_shot_b1_bias": 71.76746203400936,
+        "zero_shot_b2_bias": 58.64000000000003,
+        "local_b2_bias": -16.3449840128155,
+        "sample_size": 2
+      },
+      {
+        "month": 4,
+        "zero_shot_b1_bias": 30.709327542511716,
+        "zero_shot_b2_bias": 106.55000000000001,
+        "local_b2_bias": -93.31854345023437,
+        "sample_size": 2
+      },
+      {
+        "month": 5,
+        "zero_shot_b1_bias": -6.832545194843988,
+        "zero_shot_b2_bias": 74.29500000000002,
+        "local_b2_bias": -56.05196275828355,
+        "sample_size": 2
+      },
+      {
+        "month": 6,
+        "zero_shot_b1_bias": -80.10348156352183,
+        "zero_shot_b2_bias": -49.947,
+        "local_b2_bias": -54.72508811521319,
+        "sample_size": 2
+      },
+      {
+        "month": 7,
+        "zero_shot_b1_bias": 262.5418968335336,
+        "zero_shot_b2_bias": 238.22700000000006,
+        "local_b2_bias": 26.30553051781213,
+        "sample_size": 3
+      },
+      {
+        "month": 8,
+        "zero_shot_b1_bias": 525.4194432235128,
+        "zero_shot_b2_bias": 318.2973333333334,
+        "local_b2_bias": 35.475920272229054,
+        "sample_size": 3
+      },
+      {
+        "month": 9,
+        "zero_shot_b1_bias": 761.9589997377561,
+        "zero_shot_b2_bias": 893.2323333333334,
+        "local_b2_bias": 178.75284638423798,
+        "sample_size": 3
+      },
+      {
+        "month": 10,
+        "zero_shot_b1_bias": 376.5078211444488,
+        "zero_shot_b2_bias": 437.6833333333334,
+        "local_b2_bias": -36.13467742138524,
+        "sample_size": 3
+      },
+      {
+        "month": 11,
+        "zero_shot_b1_bias": 60.92563989862712,
+        "zero_shot_b2_bias": 77.49200000000003,
+        "local_b2_bias": -127.02125571327092,
+        "sample_size": 3
+      },
+      {
+        "month": 12,
+        "zero_shot_b1_bias": -59.66122198577481,
+        "zero_shot_b2_bias": 53.437666666666665,
+        "local_b2_bias": -68.70268477005084,
+        "sample_size": 3
+      }
+    ],
+    "months_where_zero_shot_b1_worse_than_b0": [
+      "2020-09",
+      "2021-07",
+      "2021-08",
+      "2021-09",
+      "2022-08",
+      "2022-09"
+    ],
+    "months_where_zero_shot_b2_worse_than_b0": [
+      "2020-09",
+      "2020-10",
+      "2021-07",
+      "2021-08",
+      "2021-09",
+      "2022-08",
+      "2022-09"
+    ],
+    "extreme_month_sensitivity": {
+      "excluded_month": "2020-09",
+      "criterion": "Largest absolute California zero-shot B2 monthly residual",
+      "models": {
+        "b0": {
+          "mae": 329.8965517241379,
+          "rmse": 389.791765805353,
+          "bias": -329.8965517241379,
+          "sample_size_months": 29
+        },
+        "b1": {
+          "mae": 220.13603160913928,
+          "rmse": 350.7396294343461,
+          "bias": 157.37806317202708,
+          "sample_size_months": 29
+        },
+        "b2": {
+          "mae": 218.86479310344833,
+          "rmse": 338.6270376696625,
+          "bias": 173.031275862069,
+          "sample_size_months": 29
+        }
+      }
+    },
+    "local_b2_largest_month_absolute_error_share": 0.11294931998238214,
+    "interpretation": [
+      "MAE and RMSE weight errors differently; RMSE is more sensitive to extreme residuals.",
+      "Failure lists describe measured residuals only and do not establish causal mechanisms."
+    ]
+  },
+  "limitations": [
+    "VIIRS is a comparison sensor, not ground truth.",
+    "Active cell-days are not fires, burned area, or complete occurrence.",
+    "The boundary is an acquisition and analysis bounding box, not a state polygon.",
+    "The first MODIS manifest records an interrupted run; the retry manifest completes the tail.",
+    "The rectangular study boundary is not a state polygon and should not be described as complete Oregon/Washington coverage."
+  ]
+}
