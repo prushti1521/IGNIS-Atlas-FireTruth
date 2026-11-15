@@ -174,21 +174,27 @@ $$A_{s,m} = \sum_{g \in \Omega} \sum_{d \in m} I_{s,g,d}$$
 *Why Cell-Days?* Cell-day discretization eliminates multi-detection spatial clustering from contiguous pixel oversampling during a single satellite overpass while faithfully capturing temporal fire persistence.
 
 ### 3. Calibration Models (Zero-Leakage Protocol)
+
+> **Benchmark scope:** The historical benchmark metrics in this subsection
+> and the following rolling-origin/multi-regime tables belong to the bundled
+> synthetic demonstration benchmark. They are not additional authentic NASA
+> observational validation results. The verified authentic California and
+> Oregon/Washington results are summarized above and in the browser artifacts.
 Models are trained exclusively on the concurrent overlap era (**2012–2018**, $N=84$ monthly pairs) and evaluated on strictly held-out out-of-sample observations (**2019–2024**, $N=72$ monthly pairs).
 
 - **Model $B_0$ (Raw Uncorrected Baseline)**:
   $$\widehat{A}_{V,m} = A_{M,m}$$
-  *Held-Out California: $\text{RMSE} = 486.2\text{ cell-days}, \text{MAPE} = 45.2\%$*
+  *Synthetic benchmark holdout: $\text{RMSE} = 486.2\text{ cell-days}, \text{MAPE} = 45.2\%$*
 
 - **Model $B_1$ (Empirical Proportional Scaling)**:
   $$\widehat{A}_{V,m} = \alpha A_{M,m}, \quad \alpha = \frac{\sum A_{M,m} A_{V,m}}{\sum A_{M,m}^2}$$
-  *Held-Out California: $\text{RMSE} = 142.0\text{ cell-days}, \text{MAPE} = 14.8\%$*
+  *Synthetic benchmark holdout: $\text{RMSE} = 142.0\text{ cell-days}, \text{MAPE} = 14.8\%$*
 
 - **Model $B_2$ (Seasonally Regularized Ridge Calibration — Flagship)**:
   $$\widehat{A}_{V,m} = (\alpha_0 + \gamma_{\text{month}(m)}) A_{M,m}$$
   with $L_2$ shrinkage toward global scaling ($\lambda = 10.0$):
   $$\mathcal{L} = \sum_{m} \left( A_{V,m} - (\alpha_0 + \gamma_k) A_{M,m} \right)^2 + \lambda \sum_{k=1}^{12} \gamma_k^2$$
-  *Held-Out California: $\text{RMSE} = \mathbf{117.1\text{ cell-days}}, \text{MAPE} = \mathbf{11.4\%}, R^2 = \mathbf{0.947}$*
+  *Synthetic benchmark holdout: $\text{RMSE} = \mathbf{117.1\text{ cell-days}}, \text{MAPE} = \mathbf{11.4\%}, R^2 = \mathbf{0.947}$*
 
 ### 4. Harmonized Satellite-Detected Fire Activity Index (HSFAI)
 $$\text{HSFAI}_m = \begin{cases} (\alpha_0 + \gamma_{\text{month}(m)}) A_{M,m} & \text{if } \text{year}(m) < 2012 \text{ (MODIS era, calibrated)} \\ A_{V,m} & \text{if } \text{year}(m) \ge 2012 \text{ (VIIRS era, observed)} \end{cases}$$
@@ -230,16 +236,18 @@ Single global calibration ratios fail across contrasting Earth biomes:
 
 ## 🖥️ Interactive Web Application Architecture
 
-The React 19 + TypeScript frontend provides 8 fully synchronized, accessible views:
+The React 19 + TypeScript frontend provides 10 fully synchronized, accessible views:
 
 1. **Executive Overview (`overview`)**: Challenge context, sensor physics, and guided exploration tour.
 2. **Global Fire Explorer (`explorer`)**: Interactive Leaflet map with satellite filters, $\sqrt{\text{FRP}}$ point scaling, and drag-and-drop NASA FIRMS CSV ingestion.
 3. **Burning Calendar (`calendar`)**: Full 26-year monthly matrix (2000–2025) comparing raw counts, HSFAI, historical medians, and anomaly metrics with accessible color ramps (Cividis, Magma, Viridis).
 4. **Harmonization Lab (`lab`)**: Empirical overlap comparison (B0 vs B1 vs B2) with rolling-origin folds and multi-scale equal-area sensitivity testing.
-5. **Scientific Challenge Mode (`challenge`)**: 6-step guided walkthrough solving real historical dilemmas with interactive stress tests.
+5. **Scientific Challenge Mode (`challenge`)**: 6-step guided walkthrough solving synthetic educational scenarios with interactive stress tests.
 6. **Evidence Resolver (`resolver`)**: Signature innovation evaluating claims against the 6 remote-sensing gates with expandable physical justifications.
 7. **Scientific Dossier (`dossier`)**: Complete peer-review validation report with rolling-origin metrics, cryptographic hashes, and Markdown/JSON/CSV exports.
 8. **Explain the Science (`science`)**: Interactive pixel footprint and sub-pixel dilution simulator explaining why MODIS and VIIRS see fires differently.
+9. **California 2020 Case Study (`california2020`)**: Authentic NASA observations with CAL FIRE final-perimeter context and explicit evidence limits.
+10. **Cross-Region Transfer Lab (`transfer`)**: Authentic Oregon/Washington transfer experiment with zero-shot failure cases and destination-local benchmarks.
 
 ---
 
