@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { DEFAULT_REGION, STUDY_REGIONS } from './data/regions';
 import { REGIONAL_DATA_CACHE } from './data/historicalFireData';
 import type { MonthlyFireRecord, RegionDefinition } from './types/fire';
 import type { FireHotspot } from './types/fire';
 import { Header } from './components/Header';
-import { ExecutiveOverview } from './components/ExecutiveOverview';
-import { ExplorerMap } from './components/ExplorerMap';
-import { BurningCalendar } from './components/BurningCalendar';
-import { HarmonizationLab } from './components/HarmonizationLab';
-import { ScientificChallengeView } from './components/ScientificChallengeView';
-import { EvidenceResolverView } from './components/EvidenceResolverView';
-import { ScientificDossierView } from './components/ScientificDossierView';
-import { ScienceExplainer } from './components/ScienceExplainer';
-import { California2020CaseStudy } from './components/California2020CaseStudy';
-import { CrossRegionTransferLab } from './components/CrossRegionTransferLab';
+import { GuidedScientificStory } from './components/GuidedScientificStory';
+const ExecutiveOverview = lazy(() => import('./components/ExecutiveOverview').then(module => ({ default: module.ExecutiveOverview })));
+const ExplorerMap = lazy(() => import('./components/ExplorerMap').then(module => ({ default: module.ExplorerMap })));
+const BurningCalendar = lazy(() => import('./components/BurningCalendar').then(module => ({ default: module.BurningCalendar })));
+const HarmonizationLab = lazy(() => import('./components/HarmonizationLab').then(module => ({ default: module.HarmonizationLab })));
+const ScientificChallengeView = lazy(() => import('./components/ScientificChallengeView').then(module => ({ default: module.ScientificChallengeView })));
+const EvidenceResolverView = lazy(() => import('./components/EvidenceResolverView').then(module => ({ default: module.EvidenceResolverView })));
+const ScientificDossierView = lazy(() => import('./components/ScientificDossierView').then(module => ({ default: module.ScientificDossierView })));
+const ScienceExplainer = lazy(() => import('./components/ScienceExplainer').then(module => ({ default: module.ScienceExplainer })));
+const California2020CaseStudy = lazy(() => import('./components/California2020CaseStudy').then(module => ({ default: module.California2020CaseStudy })));
+const CrossRegionTransferLab = lazy(() => import('./components/CrossRegionTransferLab').then(module => ({ default: module.CrossRegionTransferLab })));
 import { EvidenceReportModal } from './components/EvidenceReportModal';
 import { Flame } from 'lucide-react';
 import { applyFirmsUpload, parseFirmsCsv } from './science/firmsCsv';
@@ -229,6 +230,11 @@ export const App: React.FC = () => {
 
       {/* Main Tab View Switcher */}
       <main style={{ flex: 1 }}>
+        <Suspense fallback={<div className="view-loading" role="status">Loading research view…</div>}>
+        {activeTab === 'story' && (
+          <GuidedScientificStory setActiveTab={setActiveTab} />
+        )}
+
         {activeTab === 'overview' && (
           <ExecutiveOverview
             selectedRegion={selectedRegion}
@@ -301,6 +307,7 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'transfer' && <CrossRegionTransferLab />}
+        </Suspense>
       </main>
 
       {/* Scientific Evidence Report Modal */}

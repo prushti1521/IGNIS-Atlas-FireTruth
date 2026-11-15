@@ -15,7 +15,8 @@ import {
   X,
   Compass,
   CheckCircle2,
-  MapPinned
+  MapPinned,
+  BookOpen
 } from 'lucide-react';
 import type { RegionDefinition } from '../types/fire';
 import { STUDY_REGIONS } from '../data/regions';
@@ -92,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <span style={{ color: 'var(--border-strong)' }}>|</span>
           <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>
-            Collection 6.1 & VNP14IMG Synchronized (2000–2025)
+            Research artifacts: California 2018–2022 · Pacific Northwest transfer 2018–2022
           </span>
         </div>
 
@@ -148,8 +149,8 @@ export const Header: React.FC<HeaderProps> = ({
               <strong style={{ color: '#fde047', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Synthetic Demonstration Fixtures Active:
               </strong>{' '}
-              Currently displaying pre-computed demonstration records calibrated from NASA FIRMS archives.
-              You may upload raw NASA FIRMS CSV files at any time to evaluate real observational data.
+              Currently displaying synthetic demonstration records. They are not authentic observational metrics.
+              Upload a NASA FIRMS CSV or switch to NASA observational mode to inspect real derived artifacts.
             </span>
           </div>
 
@@ -400,7 +401,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 8-Tab Navigation Bar */}
+      {/* Guided story plus the ten full research views */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -409,6 +410,14 @@ export const Header: React.FC<HeaderProps> = ({
         borderTop: '1px solid var(--border-subtle)',
         overflowX: 'auto'
       }}>
+        <TabButton
+          active={activeTab === 'story'}
+          onClick={() => setActiveTab('story')}
+          icon={<BookOpen size={15} />}
+          label="Guided Story"
+          badge="3–5 min"
+          highlight
+        />
         <TabButton
           active={activeTab === 'overview'}
           onClick={() => setActiveTab('overview')}

@@ -73,16 +73,22 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
           </h1>
 
           <p style={{ fontSize: '1.2rem', color: '#94a3b8', fontWeight: 500, marginBottom: '16px' }}>
-            <em>One Fire History. Multiple Satellites. Evidence You Can Trust.</em>
+            <em>One Planet. Multiple Fire Sensors. A Clearer View of the Evidence.</em>
           </p>
 
           <p style={{ fontSize: '0.94rem', color: 'var(--text-main)', lineHeight: 1.65, marginBottom: '24px' }}>
-            For over 25 years, NASA’s MODIS and VIIRS instruments have monitored global wildfires. Yet environmental scientists and policymakers face a perilous trap:
-            naive multi-decadal comparisons suffer from an artificial <strong>+370% surge artifact</strong> simply because VIIRS 375 m pixels cover ~7.11× smaller area than MODIS 1,000 m pixels, detecting far more sub-pixel hotspots for identical firelines.
-            <strong> FireTruth</strong> replaces raw counting with true <strong>Authalic Sinusoidal Equal-Area cell-days</strong>, regularized cross-instrument calibration, and a pioneering <strong>6-Gate Scientific Evidence Resolver</strong>.
+            Explore authentic NASA MODIS and VIIRS active-fire observations, investigate why sensor counts diverge, and see where harmonization succeeds—and where it fails.
+            FireTruth replaces raw counting with <strong>authalic sinusoidal equal-area cell-days</strong>, explicit calibration, and a transparent <strong>6-Gate Scientific Evidence Resolver</strong>.
           </p>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('story')}
+              className="btn-secondary"
+              style={{ fontSize: '0.9rem', padding: '10px 20px' }}
+            >
+              Explore the Evidence <ArrowRight size={16} />
+            </button>
             <button
               onClick={() => setActiveTab('challenge')}
               className="btn-primary"

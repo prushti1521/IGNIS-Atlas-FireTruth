@@ -1,13 +1,58 @@
 # IGNIS Atlas — FireTruth
-### *One Fire History. Multiple Satellites. Evidence You Can Trust.*
+### *One Planet. Multiple Fire Sensors. A Clearer View of the Evidence.*
 
 [![NASA Space Apps Challenge 2026](https://img.shields.io/badge/NASA%20Space%20Apps-2026-0284c7?style=for-the-badge&logo=nasa)](https://www.spaceappschallenge.org/2026/challenges/modis-and-viirs-hot-spots/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Pytest 14 Passed](https://img.shields.io/badge/Pytest-14%20Passed-10b981?style=for-the-badge&logo=pytest&logoColor=white)](tests/test_harmonization.py)
+[![Pytest 34 Passed](https://img.shields.io/badge/Pytest-34%20Passed-10b981?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![Oxlint 0 Errors](https://img.shields.io/badge/Oxlint-0%20Errors-38bdf8?style=for-the-badge)](src/)
+
+---
+
+## Windsor 2026 submission brief
+
+IGNIS Atlas — FireTruth investigates how NASA MODIS and VIIRS active-fire
+observations can disagree because the sensors have different spatial sampling.
+It aligns qualified observations on a 25 km authalic equal-area grid, reduces
+repeated detections to active cell-days, evaluates B0/B1/B2 harmonization, and
+keeps uncertainty and missing evidence visible.
+
+The strongest validated result is also a limitation: in the authentic
+Oregon/Washington transfer holdout, California-trained zero-shot B2 has RMSE
+**400.95** versus B0 **389.21**, while destination-local B2 reaches **132.75**
+MODIS–VIIRS agreement RMSE. These are comparison-sensor metrics, not
+ground-truth fire-detection accuracy. VIIRS is never treated as ground truth,
+and active cell-days are not individual fires or burned area.
+
+### Start the application
+
+```powershell
+npm install
+npm run dev
+```
+
+For a production build:
+
+```powershell
+npm run build
+npm run preview
+```
+
+Start with **Guided Story**, then inspect the complete ten-view research
+interface. Reproducibility and submission materials:
+
+- [Reproducibility instructions](docs/REPRODUCIBILITY.md)
+- [Phase 4 readiness notes](docs/PHASE4_READINESS.md)
+- [Windsor 2026 submission readiness packet](docs/SUBMISSION_READINESS.md)
+- [Eligibility timeline for organizer clarification](docs/ELIGIBILITY_TIMELINE.md)
+- [NASA data sources and attribution](docs/DATA_SOURCES.md)
+
+> **Eligibility disclosure:** repository history contains development before
+> the Windsor orientation window described by the organizers. This history is
+> preserved. The project must not be represented as eligible until organizers
+> clarify how the rule applies.
 
 ---
 
@@ -224,8 +269,8 @@ Detailed scientific documents are maintained in [`docs/`](docs/):
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/prushti1521/Ignis-Atlas.git
-cd Ignis-Atlas
+git clone https://github.com/prushti1521/IGNIS-Atlas-FireTruth.git
+cd IGNIS-Atlas-FireTruth
 
 # Install Node dependencies
 npm install
@@ -236,7 +281,7 @@ pip install -r science/requirements.txt
 
 ### Run Tests & Verification
 ```bash
-# Run Python unit and cross-language tests (14 passed)
+# Run Python unit and cross-language tests (34 passed)
 pytest
 
 # Run Node.js cross-language parity test
