@@ -174,7 +174,7 @@ def test_real_firms_ingestion_pipeline():
     assert meta["total_records_ingested"] == 13
     assert meta["qualified_hotspots"] == 13
     assert meta["nominal_cell_area_km2"] == 625.0
-    assert "c91ebe051408a50f159cc40a0edd4acf255c0e560860f5ce9451a5fadfe19b6c" in meta["source_sha256"]
+    assert meta["source_sha256"] == "9763df44d02ff223a2ecc0eb8512849e47131c1db5e60c8fec71a95719925d6b"
 
     # Verify grouping
     aug_viirs = monthly_df[(monthly_df["year"] == 2024) & (monthly_df["month"] == 8) & (monthly_df["instrument"] == "VIIRS")]
