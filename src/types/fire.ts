@@ -96,7 +96,13 @@ export interface CalibrationModelResult {
   };
 }
 
-export type EvidenceGateStatus = 'PASS' | 'WARNING' | 'FAIL' | 'NOT_EVALUATED';
+export type EvidenceGateStatus =
+  | 'PASS'
+  | 'WARNING'
+  | 'FAIL'
+  | 'NOT_EVALUATED'
+  | 'INSUFFICIENT_EVIDENCE'
+  | 'LIMITED_COVERAGE';
 export type EvidenceOverallVerdict = 'SUPPORTED' | 'QUALIFIED' | 'INSUFFICIENT_EVIDENCE';
 
 export interface EvidenceGateItem {

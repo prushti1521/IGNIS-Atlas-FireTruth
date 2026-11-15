@@ -48,6 +48,13 @@
   padding: 0;
 }
 
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--bg-deep);
   color: var(--text-main);
@@ -61,6 +68,17 @@ body {
     radial-gradient(circle at 85% 80%, rgba(255, 87, 34, 0.04) 0%, transparent 45%),
     radial-gradient(circle at 50% 50%, rgba(14, 21, 38, 0.4) 0%, transparent 80%);
   min-height: 100vh;
+}
+
+main {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+header {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Custom Scrollbars */

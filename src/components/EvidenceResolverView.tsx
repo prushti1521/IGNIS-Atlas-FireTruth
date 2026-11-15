@@ -409,6 +409,8 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
             const isPass = gate.status === 'PASS';
             const isWarn = gate.status === 'WARNING';
             const isNotEval = gate.status === 'NOT_EVALUATED';
+            const isLimited = gate.status === 'LIMITED_COVERAGE';
+            const isInsufficient = gate.status === 'INSUFFICIENT_EVIDENCE';
             const isExpanded = Boolean(expandedGates[gate.id]);
 
             return (
@@ -420,7 +422,7 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
                     ? '1px solid rgba(16, 185, 129, 0.25)' 
                     : isWarn 
                       ? '1px solid rgba(245, 158, 11, 0.25)' 
-                      : isNotEval
+                      : isNotEval || isLimited
                         ? '1px solid rgba(148, 163, 184, 0.25)'
                         : '1px solid rgba(239, 68, 68, 0.25)',
                   borderRadius: '8px',
@@ -447,7 +449,7 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
                         <CheckCircle2 size={18} color="#10b981" />
                       ) : isWarn ? (
                         <AlertTriangle size={18} color="#f59e0b" />
-                      ) : isNotEval ? (
+                      ) : isNotEval || isLimited ? (
                         <HelpCircle size={18} color="#94a3b8" />
                       ) : (
                         <XCircle size={18} color="#ef4444" />
@@ -461,7 +463,7 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
                         <span className={`badge ${
                           isPass ? 'badge-emerald' : 
                           isWarn ? 'badge-amber' : 
-                          isNotEval ? 'badge-cyan' : 'badge-crimson'
+                          isNotEval ? 'badge-cyan' : isLimited ? 'badge-amber' : isInsufficient ? 'badge-crimson' : 'badge-crimson'
                         }`} style={{ fontSize: '0.62rem' }}>
                           {gate.status.replace('_', ' ')}
                         </span>

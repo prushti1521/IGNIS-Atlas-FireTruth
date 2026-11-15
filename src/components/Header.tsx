@@ -464,6 +464,12 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => setActiveTab('science')}
           icon={<Microscope size={15} />}
           label="8. Explain the Science"
+        />
+        <TabButton
+          active={activeTab === 'case-study'}
+          onClick={() => setActiveTab('case-study')}
+          icon={<MapPin size={15} />}
+          label="9. California 2020 Case Study"
           badge="Physics"
         />
       </div>

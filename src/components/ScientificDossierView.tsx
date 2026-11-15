@@ -65,11 +65,11 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
 
   // Cryptographic reproducibility hashes
   const reproducibilityManifest = {
-    dataset_sha256: '1b060834e7d465e3fbb63c77d281ade75e3058ba1609171802018d9fd3b50a72',
-    algorithm_spec: 'HSFAI-Authalic-Sinusoidal-B2-Ridge-v2.1',
-    python_pipeline_commit: 'git-rev-2026-nasa-firms-v2.0',
-    verification_standard: 'CEOS LPV Active Fire Stage 2 Protocol',
-    generated_at: '2026-10-04T00:00:00.000Z'
+    dataset_sha256: 'cc94738b343369d2bcca5bd523999875adcece8cdd449e6585edd4bf11d293a5',
+    algorithm_spec: '25 km authalic sinusoidal equal-area; nominal_high confidence policy',
+    python_pipeline_commit: 'Not recorded in the observational artifact',
+    verification_standard: 'Artifact schema, provenance, and chronological split checks',
+    generated_at: 'Source artifact generation timestamp not recorded'
   };
 
   const sourceLabel = dataSourceMode === 'observational'
@@ -101,16 +101,20 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
 
 ---
 
-## 2. Model Calibration & Multi-Regime Scaling (Calibrated Demonstration Benchmark)
+## 2. Model Calibration & Multi-Regime Scaling (${dataSourceMode === 'observational' ? 'NASA Observational Artifact' : 'Calibrated Demonstration Benchmark'})
 
 | Region | Fire Regime | Calibrated $\\alpha$ | In-Sample $R^2$ | Held-Out MAPE (B1) | Held-Out RMSE (B1) |
 |---|---|---|---|---|---|
-| California | Temperate Wildfire (Forest & Chaparral) | 3.68x | 0.946 | 2.4% | 117.1 |
+${dataSourceMode === 'observational'
+  ? `| California | NASA FIRMS 25 km cell-days | ${observationalCalibration.b1.alpha.toFixed(4)}x | NOT_EVALUATED | NOT_EVALUATED | ${observationalCalibration.b1.metrics.rmse.toFixed(2)} |`
+  : `| California | Temperate Wildfire (Forest & Chaparral) | 3.68x | 0.946 | 2.4% | 117.1 |
 | Punjab | Agricultural Residue (Rice Stubble) | 5.84x | 0.892 | 2.4% | 71.9 |
 | Amazon Basin | Tropical Deforestation & Peat Smoldering | 4.22x | 0.915 | 2.4% | 346.0 |
-| NSW Australia | Subtropical Bushfire & Pyrocumulonimbus | 3.95x | 0.934 | 2.4% | 239.7 |
+| NSW Australia | Subtropical Bushfire & Pyrocumulonimbus | 3.95x | 0.934 | 2.4% | 239.7 |`}
 
-*Finding:* Cross-regime transfer reveals that a forest-derived scaling factor ($\\alpha=3.68$) transferred to agricultural burns (Punjab, $\\alpha=5.84$) creates a **-37% negative bias (MBE = -461.9 cell-days)**. Regime-specific calibration is mandatory.
+${dataSourceMode === 'observational'
+  ? '*Finding:* The stored observational artifact reports cross-sensor agreement RMSE. MAPE, in-sample R², and independent accuracy are NOT_EVALUATED.'
+  : '*Finding:* Cross-regime transfer reveals that a forest-derived scaling factor ($\\alpha=3.68$) transferred to agricultural burns (Punjab, $\\alpha=5.84$) creates a **-37% negative bias (MBE = -461.9 cell-days)**. Regime-specific calibration is mandatory.'}
 
 ---
 
@@ -299,24 +303,34 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
             <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
               Validation Quality
             </span>
-            <span className="badge badge-emerald" style={{ fontSize: '0.68rem' }}>Demonstration Benchmark</span>
+            <span className="badge badge-emerald" style={{ fontSize: '0.68rem' }}>
+              {dataSourceMode === 'observational' ? 'NASA Observational Artifact' : 'Demonstration Benchmark'}
+            </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Held-Out MAPE</span>
-              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#34d399', fontFamily: 'var(--font-mono)' }}>2.4%</span>
+              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
+                {dataSourceMode === 'observational' ? 'NOT_EVALUATED' : '2.4%'}
+              </span>
             </div>
             <div>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Held-Out RMSE</span>
-              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-bright)', fontFamily: 'var(--font-mono)' }}>117.1</span>
+              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-bright)', fontFamily: 'var(--font-mono)' }}>
+                {dataSourceMode === 'observational' ? observationalCalibration.b2.metrics.rmse.toFixed(2) : '117.1'}
+              </span>
             </div>
             <div>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>In-Sample R²</span>
-              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-bright)', fontFamily: 'var(--font-mono)' }}>0.946</span>
+              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-bright)', fontFamily: 'var(--font-mono)' }}>
+                {dataSourceMode === 'observational' ? 'NOT_EVALUATED' : '0.946'}
+              </span>
             </div>
           </div>
           <p style={{ fontSize: '0.76rem', color: 'var(--text-dim)', marginTop: '8px' }}>
-            Evaluated on held-out split (2019–2024, N=72) across calibrated demonstration records.
+            {dataSourceMode === 'observational'
+              ? 'RMSE is from the verified 30-month observational holdout; MAPE and independent accuracy are NOT_EVALUATED.'
+              : 'Evaluated on held-out split (2019–2024, N=72) across calibrated demonstration records.'}
           </p>
         </div>
       </div>
@@ -325,10 +339,14 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
       <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
           <Table size={20} color="var(--accent-cyan)" />
-          <h3 style={{ fontSize: '1.15rem' }}>1. Rolling-Origin Cross-Validation Matrix (2017–2024)</h3>
+          <h3 style={{ fontSize: '1.15rem' }}>
+            1. {dataSourceMode === 'observational' ? 'Verified Observational Holdout' : 'Rolling-Origin Cross-Validation Matrix (2017–2024)'}
+          </h3>
         </div>
         <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>
-          To prevent temporal leakage in time-series fire data, calibration models are evaluated using expanding training windows (starting 2012–2016) tested strictly against subsequent unseen calendar years.
+          {dataSourceMode === 'observational'
+            ? 'The artifact-derived split is January 2018–June 2020 for training and July 2020–December 2022 for holdout. The displayed RMSE values are cross-sensor agreement metrics, not independent accuracy.'
+            : 'To prevent temporal leakage in time-series fire data, calibration models are evaluated using expanding training windows (starting 2012–2016) tested strictly against subsequent unseen calendar years.'}
         </p>
 
         <div style={{ overflowX: 'auto' }}>
@@ -366,12 +384,22 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
               ))}
               <tr style={{ background: 'rgba(6, 182, 212, 0.08)', fontWeight: 700 }}>
                 <td style={{ padding: '10px' }} colSpan={3}>Mean Performance (All 8 Folds)</td>
-                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#f87171' }}>2865.7</td>
-                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#34d399' }}>103.9</td>
-                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>2.36%</td>
-                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>113.6</td>
+                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#f87171' }}>
+                  {dataSourceMode === 'observational' ? observationalCalibration.b0.metrics.rmse.toFixed(2) : '2865.7'}
+                </td>
+                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#34d399' }}>
+                  {dataSourceMode === 'observational' ? observationalCalibration.b1.metrics.rmse.toFixed(2) : '103.9'}
+                </td>
+                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>
+                  {dataSourceMode === 'observational' ? 'NOT_EVALUATED' : '2.36%'}
+                </td>
+                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>
+                  {dataSourceMode === 'observational' ? observationalCalibration.b2.metrics.rmse.toFixed(2) : '113.6'}
+                </td>
                 <td style={{ padding: '10px' }}>
-                  <span className="badge badge-emerald" style={{ fontSize: '0.66rem' }}>B1 Dominant</span>
+                  <span className="badge badge-emerald" style={{ fontSize: '0.66rem' }}>
+                    {dataSourceMode === 'observational' ? 'B2' : 'B1 Dominant'}
+                  </span>
                 </td>
               </tr>
             </tbody>

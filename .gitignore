@@ -15,6 +15,7 @@ dist-ssr
 # NASA downloads are large and must be retained with their generated manifests,
 # not committed to the application repository.
 data/nasa_firms/
+data/reference/
 
 # Editor directories and files
 .vscode/*
