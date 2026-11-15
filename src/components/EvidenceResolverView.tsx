@@ -36,8 +36,8 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
   onOpenReport,
   dataSourceMode
 }) => {
-  const [yearA, setYearA] = useState<number>(initialYearA);
-  const [yearB, setYearB] = useState<number>(initialYearB);
+  const [yearA, setYearA] = useState<number>(dataSourceMode === 'observational' ? 2018 : initialYearA);
+  const [yearB, setYearB] = useState<number>(dataSourceMode === 'observational' ? 2022 : initialYearB);
   const [monthFilter, setMonthFilter] = useState<number | undefined>(initialMonth);
   const [expandedGates, setExpandedGates] = useState<Record<string, boolean>>({
     'gate-1-domain': false,
@@ -75,7 +75,9 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
   };
 
   // Run the 5-Gate Evidence Audit
-  const audit = runEvidenceAudit(selectedRegion, records, yearA, yearB, monthFilter);
+  const audit = runEvidenceAudit(selectedRegion, records, yearA, yearB, monthFilter, {
+    dataSourceMode
+  });
 
   const monthNames = [
     'All Months (Annual Aggregate)',

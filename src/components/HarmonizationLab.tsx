@@ -3,7 +3,7 @@ import { type CalibrationParams, DEFAULT_CALIBRATION_PARAMS, evaluateCalibration
 import type { MonthlyFireRecord, RegionDefinition } from '../types/fire';
 import { Sliders, TrendingUp, BarChart3, Database } from 'lucide-react';
 import type { DataSourceMode } from '../types/dataSource';
-import { NASA_OBSERVATIONAL_ARTIFACT } from '../data/nasaObservationalData';
+import { NASA_OBSERVATIONAL_ARTIFACT, NASA_OBSERVATIONAL_EVALUATION } from '../data/nasaObservationalData';
 
 interface HarmonizationLabProps {
   records: MonthlyFireRecord[];
@@ -16,11 +16,25 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
   selectedRegion,
   dataSourceMode
 }) => {
-  const [params, setParams] = useState<CalibrationParams>(DEFAULT_CALIBRATION_PARAMS);
+  const [params, setParams] = useState<CalibrationParams>(
+    dataSourceMode === 'observational'
+      ? {
+          ...DEFAULT_CALIBRATION_PARAMS,
+          trainStartYear: Number(NASA_OBSERVATIONAL_EVALUATION.trainingStart.slice(0, 4)),
+          trainEndYear: Number(NASA_OBSERVATIONAL_EVALUATION.trainingEnd.slice(0, 4)),
+          testStartYear: Number(NASA_OBSERVATIONAL_EVALUATION.holdoutStart.slice(0, 4)),
+          testEndYear: Number(NASA_OBSERVATIONAL_EVALUATION.holdoutEnd.slice(0, 4)),
+          trainStartMonth: Number(NASA_OBSERVATIONAL_EVALUATION.trainingStart.slice(5, 7)),
+          trainEndMonth: Number(NASA_OBSERVATIONAL_EVALUATION.trainingEnd.slice(5, 7)),
+          testStartMonth: Number(NASA_OBSERVATIONAL_EVALUATION.holdoutStart.slice(5, 7)),
+          testEndMonth: Number(NASA_OBSERVATIONAL_EVALUATION.holdoutEnd.slice(5, 7))
+        }
+      : DEFAULT_CALIBRATION_PARAMS
+  );
   const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
 
   // Compute calibration models and held-out validation results
-  const { b0, b1, b2, scatterPoints } = evaluateCalibrationModels(records, selectedRegion, params);
+  const { b0, b1, b2, scatterPoints, evaluationStatus, statusReason } = evaluateCalibrationModels(records, selectedRegion, params);
 
   // Determine winning model on held-out data
   const bestModel = b2.metrics.heldoutRMSE <= b1.metrics.heldoutRMSE ? b2 : b1;
@@ -48,7 +62,7 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
           <span className="badge badge-amber">Empirical Calibration & Held-Out Testing</span>
         </div>
         <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Resolving sensor discrepancy during the 2012–2025 overlap period. Testing whether regularized calibration
+          Resolving sensor discrepancy with a source-specific chronological split. Testing whether regularized calibration
           generalizes out-of-sample and comparing models against the raw B0 baseline.
         </p>
         {dataSourceMode === 'observational' && (
@@ -60,6 +74,12 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
               B1 α {NASA_OBSERVATIONAL_ARTIFACT.calibration.b1.alpha.toFixed(4)} / RMSE {NASA_OBSERVATIONAL_ARTIFACT.calibration.b1.metrics.rmse.toFixed(2)} ·
               B2 RMSE {NASA_OBSERVATIONAL_ARTIFACT.calibration.b2.metrics.rmse.toFixed(2)}
             </span>
+          </div>
+        )}
+        {evaluationStatus === 'NOT_EVALUATED' && (
+          <div className="glass-panel" style={{ padding: '12px 16px', marginTop: '12px', borderColor: 'rgba(248, 113, 113, 0.5)' }}>
+            <strong style={{ color: '#fca5a5' }}>Interactive evaluation: NOT_EVALUATED</strong>{' '}
+            {statusReason}
           </div>
         )}
       </div>
@@ -87,8 +107,8 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input
                     type="range"
-                    min={2012}
-                    max={2020}
+                    min={dataSourceMode === 'observational' ? 2018 : 2012}
+                    max={dataSourceMode === 'observational' ? 2022 : 2020}
                     value={params.trainEndYear}
                     onChange={e => {
                       const end = Number(e.target.value);
@@ -194,7 +214,9 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BarChart3 size={16} color="var(--accent-cyan)" />
-                <h3 style={{ fontSize: '1rem' }}>Held-Out Validation Benchmark ({params.testStartYear}–{params.testEndYear})</h3>
+                <h3 style={{ fontSize: '1rem' }}>
+                  {dataSourceMode === 'observational' ? 'Interactive Reproduction' : 'Held-Out Validation Benchmark'} ({params.testStartYear}–{params.testEndYear})
+                </h3>
               </div>
               <span className="badge badge-emerald">
                 Recommended: {bestModel.id} ({bestModel.name.split('—')[1]})
@@ -244,10 +266,10 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
                         {m.metrics.heldoutRMSE}
                       </td>
                       <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: isB0 ? '#f87171' : '#38bdf8' }}>
-                        {m.metrics.heldoutMAPE}%
+                        {dataSourceMode === 'observational' ? 'NOT_EVALUATED' : `${m.metrics.heldoutMAPE}%`}
                       </td>
                       <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#34d399' }}>
-                        {isB0 ? 'Baseline' : `-${m.metrics.relativeMapeReductionVsB0 ?? 0}%`}
+                        {dataSourceMode === 'observational' ? 'NOT_EVALUATED' : isB0 ? 'Baseline' : `-${m.metrics.relativeMapeReductionVsB0 ?? 0}%`}
                       </td>
                     </tr>
                   );
@@ -256,8 +278,9 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
             </table>
 
             <div style={{ marginTop: '12px', fontSize: '0.74rem', color: 'var(--text-dim)', lineHeight: 1.4 }}>
-              *Scientific takeaway: Raw count model <strong>B0</strong> suffers catastrophic out-of-sample error ({b0.metrics.heldoutMAPE}% MAPE) because it ignores the 375m pixel sensitivity shift.
-              Calibrated model <strong>{bestModel.id}</strong> drops held-out error to {bestModel.metrics.heldoutMAPE}%, making multi-decadal comparisons scientifically defensible.
+              {dataSourceMode === 'observational'
+                ? '* Interactive RMSE values are recomputed from the monthly observational artifact using the selected split. MAPE and independent accuracy are NOT_EVALUATED because the committed artifact does not provide that evidence.'
+                : <>*Scientific takeaway: Raw count model <strong>B0</strong> suffers catastrophic out-of-sample error ({b0.metrics.heldoutMAPE}% MAPE) because it ignores the 375m pixel sensitivity shift. Calibrated model <strong>{bestModel.id}</strong> drops held-out error to {bestModel.metrics.heldoutMAPE}%, making multi-decadal comparisons scientifically defensible.</>}
             </div>
           </div>
 
@@ -266,13 +289,17 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <TrendingUp size={16} color="var(--accent-cyan)" />
-                <h4 style={{ fontSize: '0.95rem' }}>MODIS vs VIIRS Overlap Concordance (2012–2025)</h4>
+                <h4 style={{ fontSize: '0.95rem' }}>
+                  MODIS vs VIIRS Overlap Concordance ({dataSourceMode === 'observational' ? '2018–2022' : '2012–2025'})
+                </h4>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38bdf8' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>Train (2012–{params.trainEndYear})</span>
+                  <span style={{ color: 'var(--text-muted)' }}>
+                    Train ({dataSourceMode === 'observational' ? '2018-01–2020-06' : `2012–${params.trainEndYear}`})
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fbbf24' }} />

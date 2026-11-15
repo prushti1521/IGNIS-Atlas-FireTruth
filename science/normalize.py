@@ -198,8 +198,8 @@ def normalize_firms_dataframe(
     summary = IngestionValidationSummary(
         total_raw_rows=total_raw,
         valid_rows=len(clean_df),
-        invalid_coords_dropped=invalid_coords_dropped,
-        invalid_dates_dropped=invalid_dates_dropped,
+        invalid_coords_dropped=invalid_coords_count,
+        invalid_dates_dropped=invalid_dates_count,
         duplicates_dropped=duplicates_count,
         data_status=data_status,
         detected_sensors=sensors,
@@ -256,4 +256,3 @@ def compute_monthly_data_availability_matrix(
                 })
 
     return pd.DataFrame(matrix_rows)
-

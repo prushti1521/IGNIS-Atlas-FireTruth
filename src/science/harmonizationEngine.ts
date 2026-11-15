@@ -5,22 +5,30 @@ export interface CalibrationParams {
   trainEndYear: number;
   testStartYear: number;
   testEndYear: number;
+  trainStartMonth?: number;
+  trainEndMonth?: number;
+  testStartMonth?: number;
+  testEndMonth?: number;
   cellKm: number; // Equal-Area cell size in km: 10, 25, 50
   confidenceFilter: 'all' | 'nominal_high' | 'high_only';
 }
 
 export const DEFAULT_CALIBRATION_PARAMS: CalibrationParams = {
-  trainStartYear: 2012,
-  trainEndYear: 2018,
-  testStartYear: 2019,
-  testEndYear: 2024,
+  trainStartYear: 2018,
+  trainEndYear: 2020,
+  testStartYear: 2020,
+  testEndYear: 2022,
+  trainStartMonth: 1,
+  trainEndMonth: 6,
+  testStartMonth: 7,
+  testEndMonth: 12,
   cellKm: 25, // Standard ~25km equal-area cell (~625 km²)
   confidenceFilter: 'nominal_high'
 };
 
 /**
- * Computes calibration metrics (MAE, RMSE, R2, MAPE) between observed VIIRS cell-days
- * and predicted VIIRS cell-days from MODIS cell-days on strictly held-out data (2019-2024).
+ * Computes calibration metrics between observed VIIRS cell-days and MODIS-derived
+ * predictions on the caller's strictly held-out month range.
  */
 export function evaluateCalibrationModels(
   records: MonthlyFireRecord[],
@@ -31,12 +39,21 @@ export function evaluateCalibrationModels(
   b1: CalibrationModelResult;
   b2: CalibrationModelResult;
   scatterPoints: Array<{ modis: number; viirs: number; year: number; month: number; isTest: boolean }>;
+  evaluationStatus: 'EVALUATED' | 'NOT_EVALUATED';
+  statusReason: string;
 } {
-  // Filter records within the overlap era (2012+) with valid non-null VIIRS and MODIS cell-days
+  const toMonthIndex = (year: number, month: number) => year * 12 + month;
+  const trainStart = toMonthIndex(params.trainStartYear, params.trainStartMonth ?? 1);
+  const trainEnd = toMonthIndex(params.trainEndYear, params.trainEndMonth ?? 12);
+  const testStart = toMonthIndex(params.testStartYear, params.testStartMonth ?? 1);
+  const testEnd = toMonthIndex(params.testEndYear, params.testEndMonth ?? 12);
+
+  // Filter records within the configured overlap era with valid non-null sensor values.
   const overlapRecords = records.filter(
     (r): r is MonthlyFireRecord & { modisCellDays: number; viirsCellDays: number } =>
       r.isObserved &&
-      r.year >= 2012 &&
+      toMonthIndex(r.year, r.month) >= trainStart &&
+      toMonthIndex(r.year, r.month) <= testEnd &&
       r.modisCellDays !== null &&
       r.viirsCellDays !== null &&
       r.modisCellDays > 0 &&
@@ -44,11 +61,11 @@ export function evaluateCalibrationModels(
   );
 
   const trainSet = overlapRecords.filter(
-    r => r.year >= params.trainStartYear && r.year <= params.trainEndYear
+    r => toMonthIndex(r.year, r.month) >= trainStart && toMonthIndex(r.year, r.month) <= trainEnd
   );
   
   const testSet = overlapRecords.filter(
-    r => r.year >= params.testStartYear && r.year <= params.testEndYear
+    r => toMonthIndex(r.year, r.month) >= testStart && toMonthIndex(r.year, r.month) <= testEnd
   );
 
   // Scatter points for plotting (guaranteed non-null numbers)
@@ -57,7 +74,7 @@ export function evaluateCalibrationModels(
     viirs: r.viirsCellDays,
     year: r.year,
     month: r.month,
-    isTest: r.year >= params.testStartYear && r.year <= params.testEndYear
+    isTest: toMonthIndex(r.year, r.month) >= testStart && toMonthIndex(r.year, r.month) <= testEnd
   }));
 
   // ==========================================
@@ -75,7 +92,7 @@ export function evaluateCalibrationModels(
   const b0: CalibrationModelResult = {
     id: 'B0',
     name: 'B0 — Raw Equal-Area Cell-Day Count',
-    description: 'No correction applied. Assumes 1 MODIS cell-day = 1 VIIRS cell-day. Causes severe step-jump artifact in 2012.',
+    description: 'No correction applied. Assumes 1 MODIS cell-day = 1 VIIRS cell-day.',
     equation: 'Â_{V,m} = A_{M,m}',
     alpha: 1.0,
     trainPeriod: [params.trainStartYear, params.trainEndYear],
@@ -114,7 +131,7 @@ export function evaluateCalibrationModels(
   const b1: CalibrationModelResult = {
     id: 'B1',
     name: 'B1 — Empirical Proportional Scaling',
-    description: 'Linear scaling ratio trained on 2012-2018 overlap. Bridges spatial resolution disparity across instruments.',
+    description: 'Linear scaling ratio fitted only on the configured training overlap.',
     equation: `Â_{V,m} = ${b1Alpha} × A_{M,m}`,
     alpha: b1Alpha,
     trainPeriod: [params.trainStartYear, params.trainEndYear],
@@ -176,7 +193,11 @@ export function evaluateCalibrationModels(
     }
   };
 
-  return { b0, b1, b2, scatterPoints };
+  const evaluationStatus = trainSet.length > 0 && testSet.length > 0 ? 'EVALUATED' : 'NOT_EVALUATED';
+  const statusReason = evaluationStatus === 'EVALUATED'
+    ? `Evaluated on ${testSet.length} held-out complete overlapping months.`
+    : 'The selected split does not contain both non-empty training and holdout overlap; no fallback records are used.';
+  return { b0, b1, b2, scatterPoints, evaluationStatus, statusReason };
 }
 
 function computeFitMetrics(

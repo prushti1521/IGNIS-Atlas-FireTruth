@@ -33,8 +33,10 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
 }) => {
   // Run default audit for the region (2008 baseline vs 2018 comparison)
   const audit = useMemo(() => {
-    return runEvidenceAudit(selectedRegion, records, 2008, 2018);
-  }, [selectedRegion, records]);
+    return runEvidenceAudit(selectedRegion, records, 2008, 2018, undefined, {
+      dataSourceMode
+    });
+  }, [selectedRegion, records, dataSourceMode]);
   const observationalCalibration = NASA_OBSERVATIONAL_ARTIFACT.calibration;
 
   // Rolling-origin metrics are retained for synthetic mode only.

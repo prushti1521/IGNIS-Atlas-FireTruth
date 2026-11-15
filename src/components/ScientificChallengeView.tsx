@@ -142,6 +142,7 @@ export const ScientificChallengeView: React.FC<ScientificChallengeViewProps> = (
       activeCase.yearB,
       activeCase.monthFilter,
       {
+      dataSourceMode,
         hasIndependentCloudMask: hasCloudMask,
         gridCellSizeKm: gridCellKm,
         confidenceFilter,
@@ -149,7 +150,7 @@ export const ScientificChallengeView: React.FC<ScientificChallengeViewProps> = (
         heldoutRmse: calibrationModel === 'B2' ? 117.1 : calibrationModel === 'B1' ? 142.0 : 380.0
       }
     );
-  }, [selectedRegion, records, activeCase, hasCloudMask, gridCellKm, confidenceFilter, calibrationModel]);
+  }, [selectedRegion, records, activeCase, hasCloudMask, gridCellKm, confidenceFilter, calibrationModel, dataSourceMode]);
 
   // Export Investigation Report
   const handleExportInvestigationReport = () => {

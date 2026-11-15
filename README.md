@@ -31,6 +31,18 @@ with RMSE 478.58 cell-days, and B2 RMSE is 464.29 cell-days. VIIRS is a
 comparison reference, not ground truth, and these results measure cross-sensor
 agreement rather than independent accuracy.
 
+The spatial explorer uses the compact authenticated artifact
+[`public/data/nasaSpatialDisagreement.json`](public/data/nasaSpatialDisagreement.json). The artifact is fetched only when the
+observational Fire Explorer is opened, cached in memory, and never embedded in the initial JavaScript bundle.
+It contains 918 equal-area 25 km cells and 13,439 cell-month records derived
+from the same raw observations. Each record reports MODIS and VIIRS active
+cell-days, strict same-UTC-day matches, and one-to-one +/-1 UTC-day matches.
+`MODIS_ONLY_CELL_MONTH` and `VIIRS_ONLY_CELL_MONTH` mean that one sensor
+recorded qualified activity while the other did not; they do not prove a
+missed detection because observation opportunity and cloud-free coverage are
+not supplied. The artifact SHA-256 is
+`4C811DE6D066EF2C514CCBC0D966CFBCB27B714DFCB2C0464EFDEF9150C3FA7`.
+
 Authentic standard-processing observations are acquired from the official NASA
 FIRMS archive or Area API, with source files, acquisition dates, filtering
 rules, and SHA-256 hashes recorded in local provenance manifests. A FIRMS

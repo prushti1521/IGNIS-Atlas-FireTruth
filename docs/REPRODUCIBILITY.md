@@ -26,6 +26,32 @@ does not include individual hotspot coordinates. Positive detections do not
 establish complete orbital observation coverage, and VIIRS is a comparison
 reference rather than ground truth.
 
+### Spatial disagreement artifact
+
+`public/data/nasaSpatialDisagreement.json` is generated locally by:
+
+```powershell
+python -m science.generate_spatial_artifact `
+  --raw-dir data\nasa_firms\raw `
+  --output public\data\nasaSpatialDisagreement.json
+```
+
+The generator reads only the 732 manifest-listed raw batches; it does not
+download data. It reuses the 25 km authalic sinusoidal grid and
+`nominal_high` confidence policy, deduplicates each sensor to one cell-day,
+and writes 918 cells and 13,439 cell-month rows. Same-day agreement is the
+intersection of sensor cell-days. The default temporal sensitivity comparison
+uses greedy one-to-one matching within +/-1 UTC day, so a detection cannot be
+counted multiple times.
+
+Sensor-only cell-months are disagreement categories, not false positives or
+false negatives. FIRMS positive records do not establish that the other
+sensor had a clear-sky observation opportunity. The browser artifact contains
+cell geometry and aggregate counts, not raw records or credentials.
+
+Artifact SHA-256:
+`4C811DE6D066EF2C514CCBC0D966CFBCB27B714DFCB2C0464EFDEF9150C3FA7`.
+
 The bundled multi-year application benchmark is synthetic and is not an
 authentic NASA validation dataset. Authentic FIRMS standard-processing files
 must be acquired separately using a user-owned NASA FIRMS MAP_KEY. Downloads
@@ -56,9 +82,9 @@ Official sources:
 - [NASA FIRMS Area API](https://firms.modaps.eosdis.nasa.gov/api/area/)
 - [NASA FIRMS data tools](https://www.earthdata.nasa.gov/data/tools/firms)
 
-No authentic multi-year archive was acquired for the current repository
-revision. Therefore all existing long-term benchmark metrics remain synthetic
-demonstrations until the acquisition and provenance manifests are supplied.
+The authenticated raw archive remains local and excluded from Git. The
+committed browser artifacts contain the verified monthly and spatial
+aggregates; raw CSV files and NASA credentials are never committed.
 
 In accordance with NASA Earth Science Data and Information System (ESDIS) Open Science guidelines and the FAIR Data Principles (Findable, Accessible, Interoperable, and Reusable), every numerical result in the bundled **synthetic demonstration benchmark** is deterministically reproducible. It is not an authentic NASA observational validation dataset.
 

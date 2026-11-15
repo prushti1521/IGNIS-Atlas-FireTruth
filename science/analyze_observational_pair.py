@@ -51,7 +51,8 @@ def build_artifact(modis_path: Path, viirs_path: Path) -> dict[str, Any]:
     evaluation_status = "NOT_EVALUATED"
     status_reason = (
         "A chronological holdout requires at least two complete overlapping "
-        "monthly observations; the current local sample contains fewer."
+        "monthly observations; evaluation remains NOT_EVALUATED until that "
+        "requirement is met."
     )
     calibration: dict[str, Any] = {
         "status": evaluation_status,
@@ -145,7 +146,6 @@ def build_artifact(modis_path: Path, viirs_path: Path) -> dict[str, Any]:
         "limitations": [
             "These are active-fire detections and cell-days, not confirmed fire events or burned area.",
             "VIIRS is a comparison reference, not ground truth.",
-            "The local sample is not sufficient for a real-data chronological holdout evaluation.",
             "Coverage completeness is not established by positive detections alone.",
         ],
     }

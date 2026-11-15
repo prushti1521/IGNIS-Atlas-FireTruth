@@ -1,9 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import type { FireHotspot, RegionDefinition } from '../types/fire';
 import { SAMPLE_HOTSPOTS } from '../data/sampleHotspots';
 import { Play, Pause, RotateCcw, Eye, Zap, Flame, Satellite } from 'lucide-react';
 import type { DataSourceMode } from '../types/dataSource';
+import {
+  loadSpatialArtifact,
+  getSpatialCell,
+  getSpatialCellMonths,
+  type SpatialDisagreementArtifact,
+  type SpatialCellMonth
+} from '../data/nasaSpatialDisagreement';
+import { buildSpatialCsv, buildSpatialGeoJson } from '../science/spatialExports';
 
 interface ExplorerMapProps {
   selectedRegion: RegionDefinition;
@@ -15,6 +23,7 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const spatialLayerRef = useRef<L.LayerGroup | null>(null);
 
   // Filters
   const [sensorFilter, setSensorFilter] = useState<'ALL' | 'MODIS' | 'VIIRS'>('ALL');
@@ -23,6 +32,12 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
   const [activeMonth, setActiveMonth] = useState<number>(8); // August default
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [selectedHotspot, setSelectedHotspot] = useState<FireHotspot | null>(null);
+  const [selectedSpatialCell, setSelectedSpatialCell] = useState<SpatialCellMonth | null>(null);
+  const [activeYear, setActiveYear] = useState<number>(2022);
+  const [spatialLayer, setSpatialLayer] = useState<'MODIS' | 'VIIRS' | 'SHARED' | 'DISAGREEMENT'>('DISAGREEMENT');
+  const [spatialArtifact, setSpatialArtifact] = useState<SpatialDisagreementArtifact | null>(null);
+  const [spatialLoadState, setSpatialLoadState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [spatialLoadError, setSpatialLoadError] = useState<string | null>(null);
 
   // Derived BBox coordinates from active region
   const customBbox = {
@@ -57,6 +72,7 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
 
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
+      spatialLayerRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
     } else {
       mapInstanceRef.current.flyTo(selectedRegion.center, selectedRegion.zoom, { duration: 1.2 });
@@ -87,6 +103,37 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
     if (dayNightFilter !== 'ALL' && h.daynight !== dayNightFilter) return false;
     return true;
   });
+
+  useEffect(() => {
+    if (dataSourceMode !== 'observational' || spatialArtifact || spatialLoadState === 'error') return;
+    loadSpatialArtifact()
+      .then(setSpatialArtifact)
+      .then(() => setSpatialLoadState('ready'))
+      .catch(error => {
+        setSpatialLoadError(error instanceof Error ? error.message : 'Unable to load the NASA spatial artifact.');
+        setSpatialLoadState('error');
+      });
+  }, [dataSourceMode, spatialArtifact, spatialLoadState]);
+  const isSpatialLoading = dataSourceMode === 'observational' && !spatialArtifact && spatialLoadState !== 'error';
+
+  const spatialRecords = useMemo(() => (
+    dataSourceMode === 'observational' && spatialArtifact
+      ? getSpatialCellMonths(spatialArtifact, activeYear, activeMonth)
+      : []
+  ), [activeMonth, activeYear, dataSourceMode, spatialArtifact]);
+  const visibleSpatialRecords = useMemo(() => spatialRecords.filter(record => {
+    if (spatialLayer === 'MODIS') return record.modis_active_cell_days > 0;
+    if (spatialLayer === 'VIIRS') return record.viirs_active_cell_days > 0;
+    if (spatialLayer === 'SHARED') return record.category === 'SHARED_CELL_MONTH';
+    return record.category !== 'SHARED_CELL_MONTH';
+  }), [spatialRecords, spatialLayer]);
+  const spatialSummary = useMemo(() => ({
+    modis: spatialRecords.filter(record => record.modis_active_cell_days > 0).length,
+    viirs: spatialRecords.filter(record => record.viirs_active_cell_days > 0).length,
+    shared: spatialRecords.filter(record => record.category === 'SHARED_CELL_MONTH').length,
+    modisOnly: spatialRecords.filter(record => record.category === 'MODIS_ONLY_CELL_MONTH').length,
+    viirsOnly: spatialRecords.filter(record => record.category === 'VIIRS_ONLY_CELL_MONTH').length
+  }), [spatialRecords]);
 
   // Calculate summary stats
   const totalHotspots = filteredHotspots.length;
@@ -138,6 +185,47 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
     });
   }, [filteredHotspots]);
 
+  useEffect(() => {
+    const group = spatialLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (dataSourceMode !== 'observational') return;
+
+    visibleSpatialRecords.forEach(record => {
+      const cell = spatialArtifact ? getSpatialCell(spatialArtifact, record.cell_id) : undefined;
+      if (!cell) return;
+      const categoryColor = record.category === 'SHARED_CELL_MONTH'
+        ? '#22c55e'
+        : record.category === 'MODIS_ONLY_CELL_MONTH' ? '#f59e0b' : '#06b6d4';
+      const layerColor = spatialLayer === 'MODIS' ? '#f59e0b'
+        : spatialLayer === 'VIIRS' ? '#06b6d4' : categoryColor;
+      const polygon = L.polygon(cell.geometry.coordinates[0].map(([lon, lat]) => [lat, lon] as L.LatLngExpression), {
+        color: layerColor,
+        fillColor: layerColor,
+        weight: 1,
+        fillOpacity: 0.18 + Math.min(0.55, (record.modis_active_cell_days + record.viirs_active_cell_days) / 50)
+      });
+      polygon.on('click', () => setSelectedSpatialCell(record));
+      polygon.bindTooltip(`${record.cell_id} · ${record.category.replaceAll('_', ' ')}`);
+      polygon.addTo(group);
+    });
+  }, [dataSourceMode, spatialArtifact, spatialLayer, visibleSpatialRecords]);
+
+  const downloadSpatialExport = (format: 'csv' | 'geojson') => {
+    if (dataSourceMode !== 'observational') return;
+    if (!spatialArtifact) return;
+    const content = format === 'csv'
+      ? buildSpatialCsv(spatialArtifact, visibleSpatialRecords)
+      : buildSpatialGeoJson(spatialArtifact, visibleSpatialRecords);
+    const blob = new Blob([content], { type: format === 'csv' ? 'text/csv' : 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ignis_spatial_${activeYear}-${String(activeMonth).padStart(2, '0')}.${format === 'csv' ? 'csv' : 'geojson'}`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -159,8 +247,33 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
       }}>
         {/* Filters Group */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          {dataSourceMode === 'observational' && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Year:</span>
+                <select value={activeYear} onChange={e => setActiveYear(Number(e.target.value))} style={{ fontSize: '0.78rem', padding: '4px 8px' }}>
+                  {[2018, 2019, 2020, 2021, 2022].map(year => <option key={year} value={year}>{year}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Layer:</span>
+                <select value={spatialLayer} onChange={e => setSpatialLayer(e.target.value as typeof spatialLayer)} style={{ fontSize: '0.78rem', padding: '4px 8px' }}>
+                  <option value="DISAGREEMENT">Disagreement</option>
+                  <option value="MODIS">MODIS activity</option>
+                  <option value="VIIRS">VIIRS activity</option>
+                  <option value="SHARED">Shared activity</option>
+                </select>
+              </div>
+              <button className="btn-secondary" onClick={() => downloadSpatialExport('csv')} style={{ padding: '5px 8px', fontSize: '0.75rem' }}>
+                CSV
+              </button>
+              <button className="btn-secondary" onClick={() => downloadSpatialExport('geojson')} style={{ padding: '5px 8px', fontSize: '0.75rem' }}>
+                GeoJSON
+              </button>
+            </>
+          )}
           {/* Sensor Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {dataSourceMode !== 'observational' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Satellite size={15} color="var(--accent-cyan)" />
             <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Sensor:</span>
             <div style={{
@@ -187,10 +300,10 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Confidence Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {dataSourceMode !== 'observational' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Confidence:</span>
             <select
               value={confidenceFilter}
@@ -201,10 +314,10 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
               <option value="NOMINAL_HIGH">Nominal + High (Standard Science)</option>
               <option value="HIGH">High Confidence Only</option>
             </select>
-          </div>
+          </div>}
 
           {/* Day / Night Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {dataSourceMode !== 'observational' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>Pass:</span>
             <select
               value={dayNightFilter}
@@ -215,7 +328,7 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
               <option value="D">Day Passes Only (D)</option>
               <option value="N">Night Passes Only (N)</option>
             </select>
-          </div>
+          </div>}
         </div>
 
         {/* Timeline Playback Controls */}
@@ -271,6 +384,19 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
           maxWidth: '320px'
         }}>
           <div className="glass-panel" style={{ padding: '12px 16px' }}>
+            {dataSourceMode === 'observational' && spatialLoadState !== 'ready' && (
+              <div role="status" style={{ marginBottom: '10px', fontSize: '0.78rem', color: spatialLoadState === 'error' ? '#fca5a5' : 'var(--text-dim)' }}>
+                {isSpatialLoading && 'Loading authentic NASA spatial artifact…'}
+                {spatialLoadState === 'error' && (
+                  <>
+                    {spatialLoadError} <button className="btn-secondary" onClick={() => {
+                      setSpatialArtifact(null);
+                      setSpatialLoadState('idle');
+                    }} style={{ marginLeft: '6px', padding: '3px 6px', fontSize: '0.7rem' }}>Retry</button>
+                  </>
+                )}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Flame size={16} color="var(--accent-fire)" />
@@ -279,11 +405,30 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
                 </span>
               </div>
               <span className="badge badge-fire" style={{ fontSize: '0.65rem' }}>
-                {totalHotspots} Detected
+                {dataSourceMode === 'observational' ? `${visibleSpatialRecords.length} cells` : `${totalHotspots} Detected`}
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem' }}>
+            {dataSourceMode === 'observational' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem' }}>
+                <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '6px 8px', borderRadius: '4px' }}>
+                  <span style={{ color: '#fbbf24', display: 'block', fontWeight: 600 }}>MODIS-active cells</span>
+                  <span style={{ fontWeight: 700 }}>{spatialSummary.modis}</span>
+                </div>
+                <div style={{ background: 'rgba(6, 182, 212, 0.1)', padding: '6px 8px', borderRadius: '4px' }}>
+                  <span style={{ color: '#38bdf8', display: 'block', fontWeight: 600 }}>VIIRS-active cells</span>
+                  <span style={{ fontWeight: 700 }}>{spatialSummary.viirs}</span>
+                </div>
+                <div style={{ background: 'rgba(34, 197, 94, 0.1)', padding: '6px 8px', borderRadius: '4px' }}>
+                  <span style={{ color: '#4ade80', display: 'block', fontWeight: 600 }}>Shared cells</span>
+                  <span style={{ fontWeight: 700 }}>{spatialSummary.shared}</span>
+                </div>
+                <div style={{ background: 'rgba(248, 113, 113, 0.1)', padding: '6px 8px', borderRadius: '4px' }}>
+                  <span style={{ color: '#fca5a5', display: 'block', fontWeight: 600 }}>Sensor-only cells</span>
+                  <span style={{ fontWeight: 700 }}>{spatialSummary.modisOnly + spatialSummary.viirsOnly}</span>
+                </div>
+              </div>
+            ) : <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem' }}>
               <div style={{ background: 'rgba(0,0,0,0.25)', padding: '6px 8px', borderRadius: '4px' }}>
                 <span style={{ color: 'var(--text-dim)', display: 'block' }}>Total FRP</span>
                 <span style={{ fontWeight: 700, color: '#fbbf24', fontSize: '0.92rem' }}>
@@ -305,11 +450,12 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
                 <span style={{ fontWeight: 700, color: '#ffffff' }}>{viirsCount} pts</span>
               </div>
             </div>
+            }
 
             <div style={{ marginTop: '10px', fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
               Bounding Box: [{customBbox.south.toFixed(1)}°S, {customBbox.west.toFixed(1)}°W] to [{customBbox.north.toFixed(1)}°N, {customBbox.east.toFixed(1)}°E]<br />
               {dataSourceMode === 'observational'
-                ? '* NASA observational artifact contains monthly aggregates only; no hotspot coordinates are shown or invented.'
+                ? `* Authentic ${activeYear}-${String(activeMonth).padStart(2, '0')} 25 km cell-month layer. Sensor-only cells do not prove missed detections.`
                 : '* Notice: VIIRS provides 3x–6x higher point density over the same fire perimeter due to 375m I-band spatial resolution vs MODIS 1000m.'}
             </div>
           </div>
@@ -339,6 +485,26 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
         </div>
 
         {/* Selected Hotspot Detail Drawer */}
+        {selectedSpatialCell && dataSourceMode === 'observational' && (
+          <div style={{ position: 'absolute', top: '16px', right: '16px', width: '340px', zIndex: 400 }}>
+            <div className="glass-panel" style={{ padding: '16px', border: '1px solid #22c55e' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-bright)' }}>Authentic cell-month detail</span>
+                <button onClick={() => setSelectedSpatialCell(null)} style={{ color: 'var(--text-dim)', fontSize: '1rem', padding: '0 4px' }}>✕</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                <div><strong>Cell:</strong> {selectedSpatialCell.cell_id}</div>
+                <div><strong>Period:</strong> {selectedSpatialCell.year}-{String(selectedSpatialCell.month).padStart(2, '0')}</div>
+                <div><strong>Category:</strong> {selectedSpatialCell.category.replaceAll('_', ' ')}</div>
+                <div><strong>MODIS active cell-days:</strong> {selectedSpatialCell.modis_active_cell_days}</div>
+                <div><strong>VIIRS active cell-days:</strong> {selectedSpatialCell.viirs_active_cell_days}</div>
+                <div><strong>Same UTC-day matches:</strong> {selectedSpatialCell.same_utc_day_matches}</div>
+                <div><strong>±{selectedSpatialCell.temporal_window_days}-day one-to-one matches:</strong> {selectedSpatialCell.window_matches}</div>
+                <p style={{ color: 'var(--text-muted)', lineHeight: 1.4 }}>{selectedSpatialCell.coverage_interpretation}</p>
+              </div>
+            </div>
+          </div>
+        )}
         {selectedHotspot && (
           <div style={{
             position: 'absolute',

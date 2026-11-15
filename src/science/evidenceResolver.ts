@@ -1,6 +1,9 @@
 import type { EvidenceAuditReport, EvidenceGateItem, EvidenceOverallVerdict, MonthlyFireRecord, RegionDefinition } from '../types/fire';
+import type { DataSourceMode } from '../types/dataSource';
+import { NASA_OBSERVATIONAL_ARTIFACT } from '../data/nasaObservationalData';
 
 export interface EvidenceAuditOptions {
+  dataSourceMode?: DataSourceMode;
   hasIndependentCloudMask?: boolean;
   mcd64a1BurnedAreaHaA?: number;
   mcd64a1BurnedAreaHaB?: number;
@@ -28,14 +31,22 @@ export function runEvidenceAudit(
   monthFilter?: number,
   options?: EvidenceAuditOptions
 ): EvidenceAuditReport {
-  const hasCloudMask = options?.hasIndependentCloudMask ?? true;
-  const heldoutMape = options?.heldoutMape ?? 11.4;
-  const heldoutRmse = options?.heldoutRmse ?? 117.1;
+  const isObservational = options?.dataSourceMode === 'observational';
+  const hasCloudMask = isObservational
+    ? options?.hasIndependentCloudMask === true
+    : options?.hasIndependentCloudMask ?? true;
+  const heldoutMape = isObservational
+    ? undefined
+    : options?.heldoutMape ?? 11.4;
+  const heldoutRmse = isObservational
+    ? NASA_OBSERVATIONAL_ARTIFACT.calibration.b2.metrics.rmse
+    : options?.heldoutRmse ?? 117.1;
   const gridCellKm = options?.gridCellSizeKm ?? 10;
 
   // Filter records for Period A and Period B
   const recsA = records.filter(r => r.year === yearA && r.isObserved && (monthFilter ? r.month === monthFilter : true));
   const recsB = records.filter(r => r.year === yearB && r.isObserved && (monthFilter ? r.month === monthFilter : true));
+  const unsupportedObservationalPeriod = isObservational && (recsA.length === 0 || recsB.length === 0);
 
   const totalModisA = recsA.reduce((s, r) => s + (r.modisCellDays ?? 0), 0);
   const totalModisB = recsB.reduce((s, r) => s + (r.modisCellDays ?? 0), 0);
@@ -80,7 +91,23 @@ export function runEvidenceAudit(
   const peakVal = Math.max(totalHsfaiA, totalHsfaiB);
   const isOutOfDomain = peakVal > domainThreshold;
   
-  if (isOutOfDomain) {
+  if (unsupportedObservationalPeriod) {
+    gates.push({
+      id: 'gate-1-domain',
+      name: 'Gate 1: Calibration Domain Validity',
+      status: 'NOT_EVALUATED',
+      title: 'Selected Period Is Outside the Observational Artifact',
+      finding: `The authentic artifact covers California 2018–2022, but the selected comparison includes ${recsA.length === 0 ? periodLabelA : periodLabelB} with no records.`,
+      metricLabel: 'Artifact period support',
+      measuredValue: 'NOT_EVALUATED',
+      thresholdLabel: '2018-01 through 2022-12',
+      scientificImplication: 'An unsupported period cannot be evaluated from the observational artifact.',
+      inputData: 'NASA observational monthly artifact.',
+      calculation: 'Selected-period support = NOT_EVALUATED',
+      limitations: 'No synthetic records are substituted for missing observational months.',
+      recommendedAction: 'Select years within the authentic 2018–2022 artifact period.'
+    });
+  } else if (isOutOfDomain) {
     gates.push({
       id: 'gate-1-domain',
       name: 'Gate 1: Calibration Domain Validity',
@@ -122,8 +149,24 @@ export function runEvidenceAudit(
   // GATE 2: Calibration Stability Gate
   // Out-of-sample error bound verification
   // ========================================================
-  if (isCrossEra) {
-    const calStatus = heldoutMape <= 15.0 ? 'PASS' : 'FAIL';
+  if (isObservational && heldoutMape === undefined) {
+    gates.push({
+      id: 'gate-2-calibration',
+      name: 'Gate 2: Calibration Stability',
+      status: 'NOT_EVALUATED',
+      title: 'MAPE Not Evaluated for the Observational Artifact',
+      finding: 'The authentic artifact reports RMSE for cross-sensor agreement, but it does not report MAPE. No synthetic MAPE value is substituted.',
+      metricLabel: 'Held-out MAPE',
+      measuredValue: 'NOT_EVALUATED',
+      thresholdLabel: 'Artifact MAPE required',
+      scientificImplication: 'Cross-sensor RMSE can be reported, but a MAPE-based decision gate is unsupported by the committed artifact.',
+      inputData: 'NASA observational artifact calibration metadata.',
+      calculation: 'MAPE = NOT_EVALUATED',
+      limitations: 'VIIRS is a comparison reference, not independent ground truth.',
+      recommendedAction: 'Report the verified RMSE and do not infer a percentage accuracy score.'
+    });
+  } else if (isCrossEra) {
+    const calStatus = heldoutMape !== undefined && heldoutMape <= 15.0 ? 'PASS' : 'FAIL';
     gates.push({
       id: 'gate-2-calibration',
       name: 'Gate 2: Calibration Stability',
@@ -165,12 +208,28 @@ export function runEvidenceAudit(
   // GATE 3: Change Versus Calibration Uncertainty Gate
   // Tests whether apparent change exceeds expected model residual noise (1.96 * RMSE)
   // ========================================================
-  const uncertaintyMargin = isCrossEra 
+  const uncertaintyMargin = isCrossEra && heldoutRmse !== undefined
     ? Number(((1.96 * heldoutRmse / Math.max(1.0, totalHsfaiA)) * 100.0).toFixed(1))
     : 6.0;
   const isAboveUncertainty = Math.abs(harmonizedDifferencePercent) > uncertaintyMargin;
 
-  if (!isAboveUncertainty) {
+  if (isObservational && heldoutRmse === undefined) {
+    gates.push({
+      id: 'gate-3-uncertainty',
+      name: 'Gate 3: Change vs Calibration Uncertainty',
+      status: 'NOT_EVALUATED',
+      title: 'Calibration RMSE Not Available',
+      finding: 'The uncertainty comparison cannot be calculated without a verified holdout RMSE.',
+      metricLabel: 'Holdout RMSE',
+      measuredValue: 'NOT_EVALUATED',
+      thresholdLabel: 'Verified artifact RMSE required',
+      scientificImplication: 'The activity difference is not classified against calibration residual uncertainty.',
+      inputData: 'NASA observational artifact calibration metadata.',
+      calculation: 'Uncertainty margin = NOT_EVALUATED',
+      limitations: 'No synthetic residual metric is substituted.',
+      recommendedAction: 'Retain the claim as qualified until a holdout RMSE is available.'
+    });
+  } else if (!isAboveUncertainty) {
     gates.push({
       id: 'gate-3-uncertainty',
       name: 'Gate 3: Change vs Calibration Uncertainty',
@@ -371,6 +430,22 @@ export function runEvidenceAudit(
       thresholdJustification: 'Multi-product validation: active fire radiative emissions and post-fire surface charring are independent physical measurements (Giglio et al. 2018).',
       limitations: 'MCD64A1 has 500m resolution and may undercount small (<100 ha) cropland burns; active fire detects smaller fires but depends on overpass timing.',
       recommendedAction: 'Report harmonized active fire alongside MCD64A1 burned area in research dossiers.'
+    });
+  } else if (isObservational) {
+    gates.push({
+      id: 'gate-6-independent',
+      name: 'Gate 6: Independent Contextual Evidence',
+      status: 'NOT_EVALUATED',
+      title: 'Independent Burned-Area Validation Not Provided',
+      finding: 'The committed observational artifact contains FIRMS active-fire detections only; no independent burned-area or perimeter product was supplied.',
+      metricLabel: 'Independent validation product',
+      measuredValue: 'NOT_EVALUATED',
+      thresholdLabel: 'Independent burned-area or perimeter product required',
+      scientificImplication: 'Cross-sensor agreement cannot be presented as independent accuracy validation.',
+      inputData: 'NASA FIRMS MODIS/VIIRS positive detections and cell-days.',
+      calculation: 'Independent validation status = NOT_EVALUATED',
+      limitations: 'VIIRS is a comparison reference, not ground truth.',
+      recommendedAction: 'Add a separately sourced burned-area or perimeter product before claiming independent validation.'
     });
   } else {
     // Contextual baseline without direct user numbers
