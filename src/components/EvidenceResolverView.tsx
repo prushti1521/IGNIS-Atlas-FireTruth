@@ -15,6 +15,7 @@ import {
   BookOpen,
   HelpCircle
 } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
 
 interface EvidenceResolverViewProps {
   records: MonthlyFireRecord[];
@@ -23,6 +24,7 @@ interface EvidenceResolverViewProps {
   initialYearB?: number;
   initialMonth?: number;
   onOpenReport: () => void;
+  dataSourceMode: DataSourceMode;
 }
 
 export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
@@ -31,7 +33,8 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
   initialYearA = 2008,
   initialYearB = 2018,
   initialMonth,
-  onOpenReport
+  onOpenReport,
+  dataSourceMode
 }) => {
   const [yearA, setYearA] = useState<number>(initialYearA);
   const [yearB, setYearB] = useState<number>(initialYearB);
@@ -104,6 +107,12 @@ export const EvidenceResolverView: React.FC<EvidenceResolverViewProps> = ({
 
   return (
     <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
+      {dataSourceMode === 'observational' && (
+        <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '16px', borderColor: 'rgba(245, 158, 11, 0.45)' }}>
+          <strong style={{ color: '#fbbf24' }}>NASA observational evidence qualification:</strong>{' '}
+          this artifact contains positive active-fire detections and cell-days, not complete orbital coverage or independent ground truth. Coverage-dependent claims are NOT_EVALUATED.
+        </div>
+      )}
       {/* Banner */}
       <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>

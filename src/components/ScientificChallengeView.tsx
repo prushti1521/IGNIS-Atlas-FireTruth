@@ -16,11 +16,13 @@ import {
   HelpCircle,
   FileText
 } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
 
 interface ScientificChallengeViewProps {
   selectedRegion: RegionDefinition;
   setSelectedRegion: (region: RegionDefinition) => void;
   records: MonthlyFireRecord[];
+  dataSourceMode: DataSourceMode;
 }
 
 interface BenchmarkCase {
@@ -104,7 +106,8 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
 export const ScientificChallengeView: React.FC<ScientificChallengeViewProps> = ({
   selectedRegion,
   setSelectedRegion,
-  records
+  records,
+  dataSourceMode
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedCaseId, setSelectedCaseId] = useState<string>('california-false-surge');
@@ -203,6 +206,12 @@ export const ScientificChallengeView: React.FC<ScientificChallengeViewProps> = (
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
+      {dataSourceMode === 'observational' && (
+        <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '16px', borderColor: 'rgba(245, 158, 11, 0.45)' }}>
+          <strong style={{ color: '#fbbf24' }}>Observational mode limitation:</strong>{' '}
+          the benchmark challenge narratives below are synthetic educational scenarios. NASA observational values are available in the calendar and harmonization lab; unsupported evidence claims remain NOT_EVALUATED.
+        </div>
+      )}
       {/* Top Banner */}
       <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{
@@ -880,4 +889,3 @@ export const ScientificChallengeView: React.FC<ScientificChallengeViewProps> = (
     </div>
   );
 };
-

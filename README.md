@@ -13,6 +13,37 @@
 
 ## 🛰️ Executive Summary & Challenge Statement
 
+## How IGNIS Atlas Uses NASA Data
+
+IGNIS Atlas supports three explicitly separated data modes: the bundled
+synthetic demonstration, user-uploaded NASA FIRMS CSV observations, and the
+verified NASA observational artifact for California (2018–2022). The
+observational mode is browser-ready at
+[`src/data/nasaObservationalData.json`](src/data/nasaObservationalData.json)
+and contains monthly aggregates only, not hotspot coordinates. It therefore
+does not invent map markers.
+
+The verified artifact contains 366/366 MODIS batches (136,743 raw rows) and
+366/366 VIIRS Suomi-NPP batches (613,099 raw rows), with 60 overlapping
+months. Its chronological evaluation uses 2018-01–2020-06 for training and
+2020-07–2022-12 for holdout. B0 RMSE is 694.74 cell-days, B1 alpha is 3.2814
+with RMSE 478.58 cell-days, and B2 RMSE is 464.29 cell-days. VIIRS is a
+comparison reference, not ground truth, and these results measure cross-sensor
+agreement rather than independent accuracy.
+
+Authentic standard-processing observations are acquired from the official NASA
+FIRMS archive or Area API, with source files, acquisition dates, filtering
+rules, and SHA-256 hashes recorded in local provenance manifests. A FIRMS
+MAP_KEY must be supplied through `FIRMS_MAP_KEY` and is never stored in the
+frontend or Git.
+
+Reproducible acquisition instructions, the California study bounds, the
+2018–2022 target period, and the distinction between observational, uploaded,
+and synthetic modes are documented in
+[docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md). No authentic multi-year
+raw archive is included in Git; the compact aggregate artifact is versioned
+for the frontend while large raw files remain ignored.
+
 Multi-decadal historical records of satellite active fire detections are the bedrock of fire regime analysis, ecological restoration, disaster response, and climate impact models. However, the historical record since 2000 is split across fundamentally disparate Earth-observing instruments:
 - **MODIS (Terra & Aqua)**: Operational since November 2000 / July 2002 with a **1,000 m** nadir footprint.
 - **VIIRS (Suomi-NPP & NOAA-20/21)**: Operational since January 2012 / January 2018 with a **375 m** I-band footprint.

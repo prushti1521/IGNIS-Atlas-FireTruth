@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 import { type CalibrationParams, DEFAULT_CALIBRATION_PARAMS, evaluateCalibrationModels } from '../science/harmonizationEngine';
 import type { MonthlyFireRecord, RegionDefinition } from '../types/fire';
 import { Sliders, TrendingUp, BarChart3, Database } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
+import { NASA_OBSERVATIONAL_ARTIFACT } from '../data/nasaObservationalData';
 
 interface HarmonizationLabProps {
   records: MonthlyFireRecord[];
   selectedRegion: RegionDefinition;
+  dataSourceMode: DataSourceMode;
 }
 
 export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
   records,
-  selectedRegion
+  selectedRegion,
+  dataSourceMode
 }) => {
   const [params, setParams] = useState<CalibrationParams>(DEFAULT_CALIBRATION_PARAMS);
   const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
@@ -47,6 +51,17 @@ export const HarmonizationLab: React.FC<HarmonizationLabProps> = ({
           Resolving sensor discrepancy during the 2012–2025 overlap period. Testing whether regularized calibration
           generalizes out-of-sample and comparing models against the raw B0 baseline.
         </p>
+        {dataSourceMode === 'observational' && (
+          <div className="glass-panel" style={{ padding: '12px 16px', marginTop: '12px', borderColor: 'rgba(6, 182, 212, 0.4)' }}>
+            <strong style={{ color: '#67e8f9' }}>Verified NASA observational holdout:</strong>{' '}
+            2018-01–2020-06 training, 2020-07–2022-12 holdout; VIIRS is the comparison reference, not ground truth.
+            <span style={{ display: 'block', marginTop: '6px', fontFamily: 'var(--font-mono)', color: 'var(--text-main)' }}>
+              B0 RMSE {NASA_OBSERVATIONAL_ARTIFACT.calibration.b0.metrics.rmse.toFixed(2)} ·
+              B1 α {NASA_OBSERVATIONAL_ARTIFACT.calibration.b1.alpha.toFixed(4)} / RMSE {NASA_OBSERVATIONAL_ARTIFACT.calibration.b1.metrics.rmse.toFixed(2)} ·
+              B2 RMSE {NASA_OBSERVATIONAL_ARTIFACT.calibration.b2.metrics.rmse.toFixed(2)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Main Two-Column Layout */}

@@ -15,26 +15,42 @@ import {
   Table,
   Cpu
 } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
+import { NASA_OBSERVATIONAL_ARTIFACT } from '../data/nasaObservationalData';
 
 interface ScientificDossierViewProps {
   selectedRegion: RegionDefinition;
   records: MonthlyFireRecord[];
   onExportCsv: () => void;
+  dataSourceMode: DataSourceMode;
 }
 
 export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
   selectedRegion,
   records,
-  onExportCsv
+  onExportCsv,
+  dataSourceMode
 }) => {
   // Run default audit for the region (2008 baseline vs 2018 comparison)
   const audit = useMemo(() => {
     return runEvidenceAudit(selectedRegion, records, 2008, 2018);
   }, [selectedRegion, records]);
+  const observationalCalibration = NASA_OBSERVATIONAL_ARTIFACT.calibration;
 
-  // Rolling-origin validation metrics verified from science/run_evaluation.py execution
+  // Rolling-origin metrics are retained for synthetic mode only.
   // Evaluated on the calibrated multi-decadal demonstration benchmark split (expanding window from 2012)
-  const rollingFolds = [
+  const rollingFolds = dataSourceMode === 'observational'
+    ? [{
+        fold: 1,
+        train: `${observationalCalibration.training_period[0]}–${observationalCalibration.training_period[1]}`,
+        test: `${observationalCalibration.holdout_period[0]}–${observationalCalibration.holdout_period[1]}`,
+        b0Rmse: observationalCalibration.b0.metrics.rmse,
+        b1Rmse: observationalCalibration.b1.metrics.rmse,
+        b1Mape: null,
+        b2Rmse: observationalCalibration.b2.metrics.rmse,
+        winner: 'B2'
+      }]
+    : [
     { fold: 1, train: '2012–2016', test: '2017', b0Rmse: 3057.0, b1Rmse: 113.9, b1Mape: 2.2, b2Rmse: 128.7, winner: 'B1' },
     { fold: 2, train: '2012–2017', test: '2018', b0Rmse: 3599.6, b1Rmse: 143.0, b1Mape: 2.5, b2Rmse: 123.7, winner: 'B2' },
     { fold: 3, train: '2012–2018', test: '2019', b0Rmse: 1095.2, b1Rmse: 36.5, b1Mape: 2.5, b2Rmse: 42.5, winner: 'B1' },
@@ -43,7 +59,7 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
     { fold: 6, train: '2012–2021', test: '2022', b0Rmse: 1585.8, b1Rmse: 67.6, b1Mape: 2.2, b2Rmse: 73.3, winner: 'B1' },
     { fold: 7, train: '2012–2022', test: '2023', b0Rmse: 695.2, b1Rmse: 24.1, b1Mape: 2.3, b2Rmse: 26.3, winner: 'B1' },
     { fold: 8, train: '2012–2023', test: '2024', b0Rmse: 2340.3, b1Rmse: 86.7, b1Mape: 2.5, b2Rmse: 94.9, winner: 'B1' }
-  ];
+      ];
 
   // Cryptographic reproducibility hashes
   const reproducibilityManifest = {
@@ -53,6 +69,12 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
     verification_standard: 'CEOS LPV Active Fire Stage 2 Protocol',
     generated_at: '2026-10-04T00:00:00.000Z'
   };
+
+  const sourceLabel = dataSourceMode === 'observational'
+    ? 'NASA observational artifact: California 2018–2022'
+    : dataSourceMode === 'uploaded'
+      ? 'User-uploaded NASA FIRMS CSV'
+      : 'Synthetic demonstration benchmark';
 
   // Export Markdown Dossier
   const handleDownloadMarkdownDossier = () => {
@@ -73,7 +95,7 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
 - **Sensor Constellation:** MODIS (Terra/Aqua) & VIIRS (Suomi-NPP / NOAA-20)
 - **Primary Finding:** Raw hotspot counts during cross-sensor comparisons indicate an artificial surge artifact of **${audit.rawDifferencePercent > 0 ? '+' : ''}${audit.rawDifferencePercent}%**, caused by the transition from 1,000 m MODIS pixels to 375 m VIIRS pixels (nominal area ratio 7.11x). After sinusoidal equal-area cell-day standardization and regularized calibration, the physical detected-activity change is **${audit.harmonizedDifferencePercent > 0 ? '+' : ''}${audit.harmonizedDifferencePercent}%**.
 - **Evidence Audit Verdict:** **${audit.overallVerdict}** (Stability Score: ${audit.stabilityScore}%, Coverage Score: ${audit.coverageScore}%)
-- **Data Provenance:** Calibrated Multi-Decadal Synthetic Demonstration Benchmark (modeled on historical regional fire statistics). Real NASA FIRMS CSV ingestion is fully supported via the client-side parser.
+- **Data Provenance:** ${sourceLabel}. ${dataSourceMode === 'observational' ? 'Metrics are authentic NASA FIRMS active-fire observations; VIIRS is a comparison reference, not ground truth.' : 'Synthetic values are demonstration-only; real NASA FIRMS CSV ingestion is separately supported.'}
 
 ---
 
@@ -94,7 +116,7 @@ export const ScientificDossierView: React.FC<ScientificDossierViewProps> = ({
 
 | Fold | Train Window | Test Window | B0 Raw RMSE | B1 Scaled RMSE | B1 Test MAPE | B2 Seasonal RMSE | Best Model |
 |---|---|---|---|---|---|---|---|
-${rollingFolds.map(f => `| ${f.fold} | ${f.train} | ${f.test} | ${f.b0Rmse.toFixed(1)} | ${f.b1Rmse.toFixed(1)} | ${f.b1Mape}% | ${f.b2Rmse.toFixed(1)} | ${f.winner} |`).join('\n')}
+${rollingFolds.map(f => `| ${f.fold} | ${f.train} | ${f.test} | ${f.b0Rmse.toFixed(1)} | ${f.b1Rmse.toFixed(1)} | ${f.b1Mape === null ? 'NOT_EVALUATED' : `${f.b1Mape}%`} | ${f.b2Rmse.toFixed(1)} | ${f.winner} |`).join('\n')}
 | **Mean** | **Expanding** | **2017–2024** | **2865.7** | **103.9** | **2.36%** | **113.6** | **B1 Dominant** |
 
 ---
@@ -180,6 +202,7 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '4px' }}>
               Comprehensive Remote-Sensing Validation Report for <strong>{selectedRegion.name}</strong> ({selectedRegion.fireRegime})
+              <br /><span style={{ color: 'var(--accent-cyan)' }}>Data source: {sourceLabel}</span>
             </p>
           </div>
 
@@ -330,7 +353,7 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
                   <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#34d399', fontWeight: 700 }}>
                     {f.b1Rmse.toFixed(1)}
                   </td>
-                  <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>{f.b1Mape}%</td>
+                  <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>{f.b1Mape === null ? 'NOT_EVALUATED' : `${f.b1Mape}%`}</td>
                   <td style={{ padding: '10px', fontFamily: 'var(--font-mono)' }}>{f.b2Rmse.toFixed(1)}</td>
                   <td style={{ padding: '10px' }}>
                     <span className={`badge ${f.winner === 'B1' ? 'badge-cyan' : 'badge-amber'}`} style={{ fontSize: '0.66rem' }}>
@@ -362,7 +385,11 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
           fontSize: '0.76rem',
           color: 'var(--text-dim)'
         }}>
-          <strong style={{ color: '#fbbf24' }}>Data Provenance Disclosure:</strong> The metrics above evaluate the calibrated multi-decadal synthetic demonstration benchmark split. For live observational testing, upload authentic NASA FIRMS CSVs via the Header button to recompute all metrics on real observation data.
+          <strong style={{ color: '#fbbf24' }}>Data Provenance Disclosure:</strong> {dataSourceMode === 'observational'
+            ? 'The metrics above are from the verified California 2018–2022 NASA FIRMS observational artifact. They describe cross-sensor agreement and are not independent accuracy validation.'
+            : dataSourceMode === 'uploaded'
+              ? 'The metrics above use user-uploaded NASA FIRMS records and depend on the uploaded file provenance.'
+              : 'The metrics above evaluate the calibrated synthetic demonstration benchmark and are not authentic observational validation.'}
         </div>
       </div>
 
@@ -502,4 +529,3 @@ ${audit.actionableRecommendations.map(r => `- ${r}`).join('\n')}
     </div>
   );
 };
-

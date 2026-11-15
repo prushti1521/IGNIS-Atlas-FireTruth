@@ -216,3 +216,23 @@ def test_firms_ingestion_filters_and_rejection_provenance(tmp_path):
     assert meta["filters"]["start_date"] == "2024-08-15"
     assert meta["filters"]["bbox"] == [37.0, -120.0, 38.0, -119.0]
     assert monthly_df.iloc[0]["raw_hotspots"] == 1
+
+
+def test_viirs_short_confidence_codes_are_normalized(tmp_path):
+    """NASA VIIRS CSVs use h/n/l confidence codes; n and h remain qualified."""
+    from science.ingest_firms import ingest_firms_csv
+
+    csv_path = tmp_path / "viirs.csv"
+    csv_path.write_text(
+        "latitude,longitude,acq_date,acq_time,satellite,instrument,confidence,frp\n"
+        "37.25,-119.75,2020-08-15,1930,N,VIIRS,n,18.4\n"
+        "37.26,-119.76,2020-08-15,1931,N,VIIRS,h,20.1\n"
+        "37.27,-119.77,2020-08-15,1932,N,VIIRS,l,12.0\n",
+        encoding="utf-8"
+    )
+
+    monthly_df, meta = ingest_firms_csv(str(csv_path))
+
+    assert meta["qualified_hotspots"] == 2
+    assert meta["rejected_rows"]["confidence_filtered"] == 1
+    assert monthly_df.iloc[0]["raw_hotspots"] == 2

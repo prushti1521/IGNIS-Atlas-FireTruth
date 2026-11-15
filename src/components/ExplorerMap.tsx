@@ -3,13 +3,15 @@ import * as L from 'leaflet';
 import type { FireHotspot, RegionDefinition } from '../types/fire';
 import { SAMPLE_HOTSPOTS } from '../data/sampleHotspots';
 import { Play, Pause, RotateCcw, Eye, Zap, Flame, Satellite } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
 
 interface ExplorerMapProps {
   selectedRegion: RegionDefinition;
   uploadedHotspots?: FireHotspot[] | null;
+  dataSourceMode: DataSourceMode;
 }
 
-export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, uploadedHotspots = null }) => {
+export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, uploadedHotspots = null, dataSourceMode }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -73,7 +75,9 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
   }, [isPlaying]);
 
   // Filter hotspots for current region and settings
-  const sourceHotspots = uploadedHotspots ?? SAMPLE_HOTSPOTS;
+  const sourceHotspots = dataSourceMode === 'observational'
+    ? []
+    : uploadedHotspots ?? SAMPLE_HOTSPOTS;
   const filteredHotspots = sourceHotspots.filter(h => {
     if (h.regionId !== selectedRegion.id) return false;
     if (Number(h.acq_date.slice(5, 7)) !== activeMonth) return false;
@@ -304,7 +308,9 @@ export const ExplorerMap: React.FC<ExplorerMapProps> = ({ selectedRegion, upload
 
             <div style={{ marginTop: '10px', fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
               Bounding Box: [{customBbox.south.toFixed(1)}°S, {customBbox.west.toFixed(1)}°W] to [{customBbox.north.toFixed(1)}°N, {customBbox.east.toFixed(1)}°E]<br />
-              *Notice: VIIRS provides 3x–6x higher point density over the same fire perimeter due to 375m I-band spatial resolution vs MODIS 1000m.
+              {dataSourceMode === 'observational'
+                ? '* NASA observational artifact contains monthly aggregates only; no hotspot coordinates are shown or invented.'
+                : '* Notice: VIIRS provides 3x–6x higher point density over the same fire perimeter due to 375m I-band spatial resolution vs MODIS 1000m.'}
             </div>
           </div>
         </div>

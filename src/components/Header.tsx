@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { RegionDefinition } from '../types/fire';
 import { STUDY_REGIONS } from '../data/regions';
+import type { DataSourceMode } from '../types/dataSource';
 
 interface HeaderProps {
   activeTab: string;
@@ -28,6 +29,8 @@ interface HeaderProps {
   onExportCsv: () => void;
   onSelectScenario: (scenarioId: string) => void;
   isDemonstrationActive?: boolean;
+  dataSourceMode: DataSourceMode;
+  onDataSourceChange: (mode: DataSourceMode) => void;
   onUploadCsv?: (file: File) => void;
   uploadedRecordCount?: number | null;
 }
@@ -41,6 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCsv,
   onSelectScenario,
   isDemonstrationActive = true,
+  dataSourceMode,
+  onDataSourceChange,
   onUploadCsv,
   uploadedRecordCount = null
 }) => {
@@ -187,6 +192,20 @@ export const Header: React.FC<HeaderProps> = ({
       )}
 
       {/* Real Uploaded Data Banner */}
+      {dataSourceMode === 'observational' && (
+        <div style={{
+          padding: '8px 24px',
+          background: 'linear-gradient(90deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.18) 100%)',
+          borderBottom: '1px solid rgba(6, 182, 212, 0.4)',
+          fontSize: '0.8rem',
+          color: '#cffafe'
+        }}>
+          <strong style={{ color: '#67e8f9' }}>NASA OBSERVATIONAL DATA ACTIVE:</strong>{' '}
+          California MODIS/VIIRS standard-processing observations, January 2018–December 2022.
+          Metrics are active-fire detections and cell-days; positive detections do not establish complete orbital coverage.
+        </div>
+      )}
+
       {!isDemonstrationActive && uploadedRecordCount !== null && (
         <div style={{
           padding: '8px 24px',
@@ -313,6 +332,38 @@ export const Header: React.FC<HeaderProps> = ({
               α={selectedRegion.baselineAlphaRatio}x
             </span>
           </div>
+
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'var(--bg-surface-elevated)',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-subtle)',
+            fontSize: '0.78rem'
+          }}>
+            <Satellite size={15} color="var(--accent-cyan)" />
+            <span style={{ color: 'var(--text-dim)' }}>Data source:</span>
+            <select
+              aria-label="Data source"
+              value={dataSourceMode}
+              onChange={e => onDataSourceChange(e.target.value as DataSourceMode)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-bright)',
+                fontWeight: 600,
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="observational" style={{ background: '#0e1526' }}>NASA Observational Data — California 2018–2022</option>
+              <option value="synthetic" style={{ background: '#0e1526' }}>Synthetic Demonstration</option>
+              <option value="uploaded" style={{ background: '#0e1526' }}>Uploaded NASA FIRMS CSV</option>
+            </select>
+          </label>
 
           {/* Upload Button */}
           <button

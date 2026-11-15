@@ -97,13 +97,20 @@ def filter_firms_confidence(df: pd.DataFrame, policy: str = "nominal_high") -> p
     if "confidence" not in df.columns:
         return df
 
+    viirs_confidence = df["confidence"].astype(str).str.strip().str.lower()
+    viirs_confidence = viirs_confidence.replace({
+        "h": "high",
+        "n": "nominal",
+        "l": "low",
+    })
+
     if policy == "all":
         return df
     elif policy == "high_only":
         is_modis_high = (df["instrument"] == "MODIS") & (pd.to_numeric(df["confidence"], errors="coerce") >= 80)
-        is_viirs_high = (df["instrument"] == "VIIRS") & (df["confidence"].astype(str).str.lower() == "high")
+        is_viirs_high = (df["instrument"] == "VIIRS") & (viirs_confidence == "high")
         return df[is_modis_high | is_viirs_high]
     else: # nominal_high (default standard science)
         is_modis_nominal = (df["instrument"] == "MODIS") & (pd.to_numeric(df["confidence"], errors="coerce") >= 30)
-        is_viirs_nominal = (df["instrument"] == "VIIRS") & (df["confidence"].astype(str).str.lower().isin(["nominal", "high"]))
+        is_viirs_nominal = (df["instrument"] == "VIIRS") & (viirs_confidence.isin(["nominal", "high"]))
         return df[is_modis_nominal | is_viirs_nominal]

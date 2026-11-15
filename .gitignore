@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# NASA downloads are large and must be retained with their generated manifests,
+# not committed to the application repository.
+data/nasa_firms/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

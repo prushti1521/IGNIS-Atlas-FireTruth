@@ -127,10 +127,17 @@ export function parseFirmsCsv(text: string): FirmsUploadResult {
     const rawConfidence = headers.indexOf('confidence') >= 0
       ? (columns[headers.indexOf('confidence')] || '').toLowerCase()
       : 'nominal';
+    const normalizedConfidence = rawConfidence === 'h'
+      ? 'high'
+      : rawConfidence === 'n'
+        ? 'nominal'
+        : rawConfidence === 'l'
+          ? 'low'
+          : rawConfidence;
     const confidence: 'low' | 'nominal' | 'high' =
-      rawConfidence === 'high' || (normalizedInstrument === 'MODIS' && Number(rawConfidence) >= 80)
+      normalizedConfidence === 'high' || (normalizedInstrument === 'MODIS' && Number(rawConfidence) >= 80)
         ? 'high'
-        : rawConfidence === 'low' || (normalizedInstrument === 'MODIS' && Number(rawConfidence) < 30)
+        : normalizedConfidence === 'low' || (normalizedInstrument === 'MODIS' && Number(rawConfidence) < 30)
           ? 'low'
           : 'nominal';
     const frpIndex = headers.indexOf('frp');

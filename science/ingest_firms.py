@@ -255,7 +255,7 @@ def main():
         }
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(out_payload, f, indent=2)
-        print(f"[✓] Successfully exported real NASA FIRMS harmonized records to: {args.output}")
+        print(f"[OK] Successfully exported NASA FIRMS harmonized records to: {args.output}")
         print("\nMonthly Aggregates Summary:")
         print(monthly_df.to_string(index=False))
 

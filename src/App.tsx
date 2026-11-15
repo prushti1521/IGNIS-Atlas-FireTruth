@@ -15,12 +15,18 @@ import { ScienceExplainer } from './components/ScienceExplainer';
 import { EvidenceReportModal } from './components/EvidenceReportModal';
 import { Flame } from 'lucide-react';
 import { applyFirmsUpload, parseFirmsCsv } from './science/firmsCsv';
+import {
+  NASA_OBSERVATIONAL_ARTIFACT,
+  NASA_OBSERVATIONAL_RECORDS,
+  NASA_OBSERVATIONAL_REGION_ID
+} from './data/nasaObservationalData';
+import type { DataSourceMode } from './types/dataSource';
 
 export const App: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<RegionDefinition>(DEFAULT_REGION);
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
-  const [isDemonstrationActive, setIsDemonstrationActive] = useState<boolean>(true);
+  const [dataSourceMode, setDataSourceMode] = useState<DataSourceMode>('observational');
   const [uploadedRecordCount, setUploadedRecordCount] = useState<number | null>(null);
   const [uploadedRegionId, setUploadedRegionId] = useState<string | null>(null);
   const [uploadedHotspots, setUploadedHotspots] = useState<FireHotspot[] | null>(null);
@@ -36,10 +42,27 @@ export const App: React.FC = () => {
 
   // Authoritative records for active region: either custom user-uploaded or cached baseline
   const currentRecords: MonthlyFireRecord[] = (
-    customRecords && uploadedRegionId === selectedRegion.id
+    dataSourceMode === 'uploaded' && customRecords && uploadedRegionId === selectedRegion.id
       ? customRecords
-      : (REGIONAL_DATA_CACHE[selectedRegion.id] || REGIONAL_DATA_CACHE.california)
+      : dataSourceMode === 'observational' && selectedRegion.id === NASA_OBSERVATIONAL_REGION_ID
+        ? NASA_OBSERVATIONAL_RECORDS
+        : (REGIONAL_DATA_CACHE[selectedRegion.id] || REGIONAL_DATA_CACHE.california)
   );
+
+  const isDemonstrationActive = dataSourceMode === 'synthetic';
+
+  const handleDataSourceChange = (mode: DataSourceMode) => {
+    if (mode === 'observational') {
+      setSelectedRegion(DEFAULT_REGION);
+      setDataSourceMode(mode);
+      return;
+    }
+    if (mode === 'uploaded' && !customRecords) {
+      alert('Upload a NASA FIRMS CSV before selecting uploaded-data mode.');
+      return;
+    }
+    setDataSourceMode(mode);
+  };
 
   const handleRegionChange = (region: RegionDefinition) => {
     setSelectedRegion(region);
@@ -106,7 +129,7 @@ export const App: React.FC = () => {
           daynight: 'D'
         })));
         setUploadedRecordCount(upload.validRecordCount);
-        setIsDemonstrationActive(false);
+        setDataSourceMode('uploaded');
       } catch (err) {
         console.error('Failed to parse uploaded CSV:', err);
         alert('Could not parse CSV. Please verify it is a valid NASA FIRMS comma-separated file.');
@@ -165,7 +188,10 @@ export const App: React.FC = () => {
       `# IGNIS Atlas — FireTruth NASA FIRMS Harmonized Fire Activity Dataset`,
       `# Study Region: ${selectedRegion.name} (${selectedRegion.fireRegime})`,
       `# Empirical VIIRS/MODIS Alpha Ratio: ${selectedRegion.baselineAlphaRatio}`,
-      `# Provenance: ${isDemonstrationActive ? 'Pre-computed Demonstration Records' : 'User-Uploaded NASA FIRMS Observational Records'}`,
+      `# Data source: ${dataSourceMode === 'observational' ? 'NASA FIRMS observational artifact' : dataSourceMode === 'uploaded' ? 'User-uploaded NASA FIRMS CSV' : 'Synthetic demonstration'}`,
+      dataSourceMode === 'observational'
+        ? `# Artifact: ${NASA_OBSERVATIONAL_ARTIFACT.artifactId} | Version: ${NASA_OBSERVATIONAL_ARTIFACT.artifactVersion}`
+        : '',
       `# Date Generated: ${new Date().toISOString()}`,
       headers.join(','),
       ...rows.map(e => e.join(','))
@@ -193,6 +219,8 @@ export const App: React.FC = () => {
         onExportCsv={handleExportCsv}
         onSelectScenario={handleSelectScenario}
         isDemonstrationActive={isDemonstrationActive}
+        dataSourceMode={dataSourceMode}
+        onDataSourceChange={handleDataSourceChange}
         onUploadCsv={handleUploadCsv}
         uploadedRecordCount={uploadedRecordCount}
       />
@@ -204,6 +232,7 @@ export const App: React.FC = () => {
             selectedRegion={selectedRegion}
             setActiveTab={setActiveTab}
             onOpenReport={() => setIsReportModalOpen(true)}
+            dataSourceMode={dataSourceMode}
           />
         )}
 
@@ -211,6 +240,7 @@ export const App: React.FC = () => {
           <ExplorerMap
             selectedRegion={selectedRegion}
             uploadedHotspots={uploadedRegionId === selectedRegion.id ? uploadedHotspots : null}
+            dataSourceMode={dataSourceMode}
           />
         )}
 
@@ -226,6 +256,7 @@ export const App: React.FC = () => {
           <HarmonizationLab
             records={currentRecords}
             selectedRegion={selectedRegion}
+            dataSourceMode={dataSourceMode}
           />
         )}
 
@@ -234,6 +265,7 @@ export const App: React.FC = () => {
             selectedRegion={selectedRegion}
             setSelectedRegion={handleRegionChange}
             records={currentRecords}
+            dataSourceMode={dataSourceMode}
           />
         )}
 
@@ -245,6 +277,7 @@ export const App: React.FC = () => {
             initialYearB={auditParams.yearB}
             initialMonth={auditParams.month}
             onOpenReport={() => setIsReportModalOpen(true)}
+            dataSourceMode={dataSourceMode}
           />
         )}
 
@@ -253,6 +286,7 @@ export const App: React.FC = () => {
             selectedRegion={selectedRegion}
             records={currentRecords}
             onExportCsv={handleExportCsv}
+            dataSourceMode={dataSourceMode}
           />
         )}
 

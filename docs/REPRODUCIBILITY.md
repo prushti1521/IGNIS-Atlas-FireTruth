@@ -7,7 +7,60 @@
 
 ## 1. Reproducibility Standard
 
-In accordance with NASA Earth Science Data and Information System (ESDIS) Open Science guidelines and the FAIR Data Principles (Findable, Accessible, Interoperable, and Reusable), every numerical result, model calibration parameter, and historical anomaly index presented in **IGNIS Atlas — FireTruth** is 100% deterministically reproducible.
+### Authentic NASA FIRMS acquisition
+
+The verified local California observational run is represented in the
+frontend by `src/data/nasaObservationalData.json`. It was built from:
+
+- MODIS_SP: 366 successful five-day batches, 136,743 raw observations.
+- VIIRS_SNPP_SP: 366 successful five-day batches, 613,099 raw observations.
+- 60 complete overlapping months, processed on a 25 km authalic sinusoidal
+  equal-area grid with the `nominal_high` confidence policy.
+- Chronological training: 2018-01 through 2020-06.
+- Chronological holdout: 2020-07 through 2022-12.
+- B0 RMSE: 694.74 cell-days; B1 alpha: 3.2814 and RMSE 478.58 cell-days;
+  B2 RMSE: 464.29 cell-days.
+
+The artifact preserves per-batch SHA-256 inputs and provenance metadata but
+does not include individual hotspot coordinates. Positive detections do not
+establish complete orbital observation coverage, and VIIRS is a comparison
+reference rather than ground truth.
+
+The bundled multi-year application benchmark is synthetic and is not an
+authentic NASA validation dataset. Authentic FIRMS standard-processing files
+must be acquired separately using a user-owned NASA FIRMS MAP_KEY. Downloads
+are intentionally excluded from Git by `.gitignore`; their SHA-256 hashes and
+request metadata are written to a local manifest.
+
+The official FIRMS Area API supports five-day windows. For California,
+2018-01-01 through 2022-12-31, run the following in PowerShell after
+requesting a MAP_KEY from NASA:
+
+```powershell
+$env:FIRMS_MAP_KEY = "<your NASA FIRMS MAP_KEY>"
+python -m science.acquire_firms --source MODIS_SP --start-date 2018-01-01 --end-date 2022-12-31
+python -m science.acquire_firms --source VIIRS_SNPP_SP --start-date 2018-01-01 --end-date 2022-12-31
+```
+
+The key is read only from `FIRMS_MAP_KEY`, never placed in the command
+arguments, frontend code, or provenance manifest. If the API rejects a
+historical request or NASA requires archive email authorization, download the
+corresponding files manually from the official archive and place the
+unchanged CSV files under `data/nasa_firms/raw/`. Record their SHA-256 values
+with `Get-FileHash` and process them with `science.ingest_firms`; do not treat
+failed requests as zero observations.
+
+Official sources:
+
+- [NASA FIRMS archive](https://firms.modaps.eosdis.nasa.gov/download/)
+- [NASA FIRMS Area API](https://firms.modaps.eosdis.nasa.gov/api/area/)
+- [NASA FIRMS data tools](https://www.earthdata.nasa.gov/data/tools/firms)
+
+No authentic multi-year archive was acquired for the current repository
+revision. Therefore all existing long-term benchmark metrics remain synthetic
+demonstrations until the acquisition and provenance manifests are supplied.
+
+In accordance with NASA Earth Science Data and Information System (ESDIS) Open Science guidelines and the FAIR Data Principles (Findable, Accessible, Interoperable, and Reusable), every numerical result in the bundled **synthetic demonstration benchmark** is deterministically reproducible. It is not an authentic NASA observational validation dataset.
 
 Reproducibility is maintained across two independent calculation engines:
 1. **Authoritative Python Engine (`science/`):** Executes batch spatial projection, rolling-origin cross-validation, and evidence-gate backtesting from terminal environments.
@@ -55,10 +108,10 @@ To run the full ingestion, authalic sinusoidal spatial discretization, cell-day 
 ```bash
 python -m science.run_pipeline
 ```
-**Expected Output:**
-- Ingests multi-sensor records.
+**Expected Output for the bundled demonstration:**
+- Ingests the repository's synthetic multi-sensor records.
 - Projects coordinates into $25\text{ km} \times 25\text{ km}$ ($625\text{ km}^2$) equal-area grid cells.
-- Evaluates B0, B1, and B2 models on overlapping data (2012–2018).
+- Evaluates B0, B1, and B2 models on synthetic overlapping data (2012–2018).
 - Exports `data/processed/harmonized_fire_records.json` and updates `science/reproducibility_manifest.json`.
 
 ### 3.3 Execute Statistical Validation & Backtesting
@@ -68,18 +121,23 @@ To run rolling-origin cross-validation (folds 1–8) and evidence-gate backtesti
 python -m science.run_evaluation
 ```
 **Expected Output:**
-- Evaluates 8 rolling-origin folds from 2017 to 2024 (Mean MAPE: **11.35%**, RMSE: **114.7**, $R^2 = 0.947$).
-- Executes cross-regime transfer experiment on Punjab crop residue (MBE: **-461.9 cell-days**, -37% bias).
-- Evaluates Evidence Gate backtesting (Unsafe conclusion rate: **0.0%**; Coverage rate: **89.5%**).
+- Evaluates the rolling-origin folds on the synthetic demonstration benchmark.
+- Executes the cross-regime transfer experiment on synthetic Punjab crop-residue records.
+- Evaluates the evidence-gate logic on synthetic demonstration records.
+
+These metrics are not real-world NASA validation results. Authentic-data
+metrics remain `NOT EVALUATED` until the acquisition workflow above has been
+completed and its provenance manifest is supplied.
 
 ### 3.4 Run the Automated Python Test Suite
 ```bash
 pytest
 ```
 **Expected Result:**
-- `tests/test_harmonization.py`: 8 passed.
+- `tests/test_harmonization.py`: 12 passed.
+- `tests/test_firms_acquisition.py`: 4 passed.
 - `tests/test_cross_language.py`: 3 passed.
-- **Total: 11 passed (0 failed).**
+- **Total: 19 passed (0 failed).**
 
 ---
 
@@ -120,4 +178,3 @@ npm run dev
 ```
 - Open browser at `http://localhost:5173`.
 - Explore all 8 views, test local NASA FIRMS CSV upload, run the 6-step Scientific Challenge walkthrough, and inspect the 6 Evidence Gates.
-

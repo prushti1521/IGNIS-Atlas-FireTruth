@@ -10,17 +10,20 @@ import {
   ArrowRight,
   Satellite
 } from 'lucide-react';
+import type { DataSourceMode } from '../types/dataSource';
 
 interface ExecutiveOverviewProps {
   selectedRegion: RegionDefinition;
   setActiveTab: (tab: string) => void;
   onOpenReport: () => void;
+  dataSourceMode: DataSourceMode;
 }
 
 export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   selectedRegion,
   setActiveTab,
-  onOpenReport
+  onOpenReport,
+  dataSourceMode
 }) => {
   return (
     <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '24px' }}>
@@ -49,7 +52,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
               NASA Space Apps Challenge 2026
             </span>
             <span className="badge badge-cyan" style={{ fontSize: '0.74rem', padding: '3px 9px' }}>
-              Best Use of Science & Data
+              {dataSourceMode === 'observational' ? 'NASA Observational Mode' : dataSourceMode === 'uploaded' ? 'Uploaded FIRMS Mode' : 'Synthetic Demonstration Mode'}
             </span>
             <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
               Active Focus: {selectedRegion.name} ({selectedRegion.fireRegime})
